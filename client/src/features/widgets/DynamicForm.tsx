@@ -67,8 +67,20 @@ export function DynamicForm({ id, title, subtitle, data }: WidgetProps<DynamicFo
   }
 
   return (
-    <WidgetCard title={title} subtitle={subtitle}>
-      <form onSubmit={handleSubmit} className="flex h-full flex-col gap-4">
+    <WidgetCard>
+      <WidgetCard.Header>
+        <div className="min-w-0">
+          <WidgetCard.Title>{title}</WidgetCard.Title>
+          {subtitle && <WidgetCard.Subtitle>{subtitle}</WidgetCard.Subtitle>}
+        </div>
+        <WidgetCard.Actions>
+          <WidgetCard.Verified />
+          <WidgetCard.Menu />
+        </WidgetCard.Actions>
+      </WidgetCard.Header>
+
+      <WidgetCard.Body>
+        <form onSubmit={handleSubmit} className="flex h-full flex-col gap-4">
         <div className="flex flex-1 flex-col gap-4">
           {data.fields.map((field) => (
             <Field
@@ -94,7 +106,8 @@ export function DynamicForm({ id, title, subtitle, data }: WidgetProps<DynamicFo
           {submitting && <Loader2 className="size-4 animate-spin" />}
           {data.submitLabel}
         </button>
-      </form>
+        </form>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

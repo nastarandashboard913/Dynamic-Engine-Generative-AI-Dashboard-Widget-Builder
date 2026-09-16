@@ -23,7 +23,16 @@ export function DistributionChart({ title, data }: WidgetProps<DistributionChart
   const active = hovered !== null ? data.bins[hovered] : null
 
   return (
-    <WidgetCard title={title} bodyClassName="flex flex-col">
+    <WidgetCard>
+      <WidgetCard.Header>
+        <WidgetCard.Title>{title}</WidgetCard.Title>
+        <WidgetCard.Actions>
+          <WidgetCard.Verified />
+          <WidgetCard.Menu />
+        </WidgetCard.Actions>
+      </WidgetCard.Header>
+
+      <WidgetCard.Body className="flex flex-col">
       {/* Fixed-height readout row. Reserving it unconditionally means hovering a
        *  bar cannot resize the chart underneath the cursor. */}
       <div className="h-5 shrink-0 text-xs text-text-muted">
@@ -77,6 +86,7 @@ export function DistributionChart({ title, data }: WidgetProps<DistributionChart
           style={{ background: 'linear-gradient(to top, var(--chart-bar), transparent)' }}
         />
       </div>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

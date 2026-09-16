@@ -82,26 +82,32 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
     .join(' ')
 
   return (
-    <WidgetCard
-      title={title}
-      bodyClassName="flex flex-col min-h-0"
-      actions={
-        <div className="relative mr-2">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-icon-xs -translate-y-1/2 text-text-dim" />
-          <input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder={data.filterPlaceholder}
-            aria-label={data.filterPlaceholder}
-            className={cn(
-              'w-44 rounded-chip border border-border bg-surface-sunken py-1.5 pl-8 pr-2.5',
-              'text-xs text-text placeholder:text-text-dim',
-              'transition-all duration-200 focus:w-56 focus:border-border-strong',
-            )}
-          />
-        </div>
-      }
-    >
+    <WidgetCard>
+      <WidgetCard.Header>
+        <WidgetCard.Title>{title}</WidgetCard.Title>
+        <WidgetCard.Actions>
+          {/* Composed as a child rather than passed through an `actions` prop —
+           *  this is markup, and markup belongs in the tree. */}
+          <div className="relative mr-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-icon-xs -translate-y-1/2 text-text-dim" />
+            <input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder={data.filterPlaceholder}
+              aria-label={data.filterPlaceholder}
+              className={cn(
+                'w-32 rounded-chip border border-border bg-surface-sunken py-1.5 pl-8 pr-2.5 sm:w-44',
+                'text-xs text-text placeholder:text-text-dim',
+                'transition-all duration-200 focus:border-border-strong sm:focus:w-56',
+              )}
+            />
+          </div>
+          <WidgetCard.Verified />
+          <WidgetCard.Menu />
+        </WidgetCard.Actions>
+      </WidgetCard.Header>
+
+      <WidgetCard.Body className="flex min-h-0 flex-col">
       {/* Header is a sibling of the scroll container, not sticky inside it.
        *  Sticky positioning inside a virtualised list fights the transform the
        *  virtualizer applies to its inner element. */}
@@ -194,6 +200,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
           </>
         )}
       </p>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

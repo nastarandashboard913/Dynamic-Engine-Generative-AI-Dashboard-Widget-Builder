@@ -18,7 +18,18 @@ export function FallbackWidget({ title, reason, onRetry }: FallbackWidgetProps) 
   const { Icon, heading, detail } = describe(reason)
 
   return (
-    <WidgetCard title={title} verified={false}>
+    <WidgetCard>
+      <WidgetCard.Header>
+        <WidgetCard.Title>{title ?? 'Widget'}</WidgetCard.Title>
+        {/* No Verified mark: this widget did not render. The menu stays, so a
+         *  broken payload can still be inspected — which is when reading the
+         *  raw schema is most useful. */}
+        <WidgetCard.Actions>
+          <WidgetCard.Menu />
+        </WidgetCard.Actions>
+      </WidgetCard.Header>
+
+      <WidgetCard.Body>
       <div
         role="alert"
         className="flex h-full flex-col items-start justify-center gap-2 rounded-lg border border-dashed border-border-strong/70 px-4 py-5"
@@ -50,6 +61,7 @@ export function FallbackWidget({ title, reason, onRetry }: FallbackWidgetProps) 
           </button>
         )}
       </div>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

@@ -23,15 +23,20 @@ export function Checklist({ id, title, data }: WidgetProps<ChecklistData>) {
   const doneCount = Object.values(state).filter(Boolean).length
 
   return (
-    <WidgetCard
-      title={title}
-      actions={
-        <span className="numeric mr-1 text-xs text-text-dim">
-          {doneCount}/{data.items.length}
-        </span>
-      }
-    >
-      <ul className="flex flex-col gap-1">
+    <WidgetCard>
+      <WidgetCard.Header>
+        <WidgetCard.Title>{title}</WidgetCard.Title>
+        <WidgetCard.Actions>
+          <span className="numeric text-xs text-text-dim">
+            {doneCount}/{data.items.length}
+          </span>
+          <WidgetCard.Verified />
+          <WidgetCard.Menu />
+        </WidgetCard.Actions>
+      </WidgetCard.Header>
+
+      <WidgetCard.Body>
+        <ul className="flex flex-col gap-1">
         {data.items.map((item) => {
           const checked = state[item.id] ?? false
           const isPending = pending.has(item.id)
@@ -80,7 +85,8 @@ export function Checklist({ id, title, data }: WidgetProps<ChecklistData>) {
             </li>
           )
         })}
-      </ul>
+        </ul>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

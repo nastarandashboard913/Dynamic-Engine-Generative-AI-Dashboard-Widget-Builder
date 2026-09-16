@@ -25,18 +25,24 @@ const Bar = ({ className, style }: { className?: string; style?: CSSProperties }
  */
 export function WidgetSkeleton({ type, title, minHeight }: WidgetSkeletonProps) {
   return (
-    <WidgetCard
-      title={title}
-      verified={false}
-      className="animate-none"
-      // The reserved height is applied here, before any data exists. Everything
-      // downstream of this widget is already in its final position.
-      bodyClassName="flex flex-col"
-    >
-      <div style={{ minHeight: minHeight - (title ? 64 : 40) }} aria-hidden>
-        {renderSilhouette(type)}
-      </div>
-      <span className="sr-only">Loading {title ?? 'widget'}…</span>
+    <WidgetCard>
+      {title && (
+        <WidgetCard.Header>
+          {/* The real title renders immediately, so the swap to content changes
+           *  no text metrics and moves nothing. */}
+          <WidgetCard.Title>{title}</WidgetCard.Title>
+        </WidgetCard.Header>
+      )}
+
+      {/* The reserved height is applied here, before any data exists —
+       *  everything downstream of this widget is already in its final
+       *  position. */}
+      <WidgetCard.Body className="flex flex-col">
+        <div style={{ minHeight: minHeight - (title ? 64 : 40) }} aria-hidden>
+          {renderSilhouette(type)}
+        </div>
+        <span className="sr-only">Loading {title ?? 'widget'}…</span>
+      </WidgetCard.Body>
     </WidgetCard>
   )
 }

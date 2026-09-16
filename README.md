@@ -205,6 +205,44 @@ would stay failed even after a good payload replaced it.
 | `DISTRIBUTION_CHART` | histogram with hover readout |
 | `DYNAMIC_FORM` | schema-driven fields *and* validation rules |
 
+### Card composition
+
+`WidgetCard` is a **compound component**: the caller composes the chrome rather
+than configuring it.
+
+```tsx
+<WidgetCard>
+  <WidgetCard.Header>
+    <WidgetCard.Label>{title}</WidgetCard.Label>   {/* KPI treatment */}
+    <WidgetCard.Actions>
+      <WidgetCard.Verified />
+      <WidgetCard.Menu />
+    </WidgetCard.Actions>
+  </WidgetCard.Header>
+  <WidgetCard.Body className="justify-between">…</WidgetCard.Body>
+</WidgetCard>
+```
+
+It began as a single component taking `title`, `subtitle`, `actions`, `verified`,
+`className` and `bodyClassName`. Three of those existed only so callers could
+reach *past* the component into its internals — a boolean to switch chrome off,
+a second `className` to restyle the body, a `ReactNode` prop to smuggle markup
+into a slot.
+
+The failure that motivated the change: `MetricCard` needs a small uppercase label
+rather than an `<h3>`, and the header's markup was unreachable. Its only option
+was to pass `verified={false}`, omit `title`, and rebuild a header inside the
+body — which silently cost it the inspector menu, since the menu lives in the
+header. **A capability was lost to a layout mismatch.** With `Header`, `Title`
+and `Label` as separate parts, it now picks the treatment it needs and keeps the
+menu.
+
+The parts share state through context, which is what makes this compound rather
+than a set of namespaced divs: `<Title>` and `<Label>` register themselves as the
+card's accessible name, and the root wires `aria-labelledby` to whichever one was
+actually rendered — never to a label that does not exist. Rendering a part
+outside `<WidgetCard>` throws a named error rather than failing silently.
+
 ### Streaming and layout-shift prevention
 
 `POST /api/generate-dashboard` is an SSE stream, and **event order is the entire
@@ -521,11 +559,6 @@ share no code.
 ## Known gaps
 
 Stated plainly rather than left to be discovered.
-
-**Compound components are not used.** `WidgetCard` is a single props-driven
-component rather than a compound (`<Card><Card.Header/>…`) API. The current shape
-is adequate for six archetypes; a compound API would pay off once widgets need
-to compose their own chrome.
 
 **Main bundle is 603kB (188kB gzip).** Widget archetypes are code-split into
 their own chunks, but Framer Motion, dnd-kit, Radix and zod all land in the entry
