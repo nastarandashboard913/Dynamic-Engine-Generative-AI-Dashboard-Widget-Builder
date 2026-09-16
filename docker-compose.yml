@@ -1,0 +1,41 @@
+# Dynamic Engine — full stack in one command.
+#
+#   docker compose up --build     → client on :5173, API on :8787
+#
+# The client container serves the production build behind nginx and proxies
+# /api to the server container over the compose network, so the browser only
+# ever talks to one origin and there is no CORS preflight on the SSE stream.
+
+services:
+  server:
+    build:
+      context: ./server
+    container_name: dynamic-engine-server
+    environment:
+      PORT: 8787
+      # Share of /api/widget-action calls that fail, so optimistic rollback is
+      # observable. Set to 0 for a clean demo, or 1 to force the failure path.
+      FAIL_RATE: ${FAIL_RATE:-0.2}
+    ports:
+      # Exposed directly as well so the API can be curl'd without the client.
+      - '8787:8787'
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8787/api/health']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+    container_name: dynamic-engine-client
+    ports:
+      - '5173:80'
+    depends_on:
+      # Wait for a passing healthcheck, not just container start — otherwise the
+      # first dashboard request can race the server's boot and 502.
+      server:
+        condition: service_healthy
+    restart: unless-stopped
