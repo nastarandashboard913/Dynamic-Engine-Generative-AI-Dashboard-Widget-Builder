@@ -1,0 +1,22 @@
+{
+  "name": "dynamic-engine",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Generative AI dashboard & widget builder — dynamic schema-driven UI runtime",
+  "scripts": {
+    "setup": "npm --prefix server ci && npm --prefix client ci",
+    "dev": "concurrently -n server,client -c magenta,cyan \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "typecheck": "npm --prefix server run typecheck && npm --prefix client run typecheck",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down -v"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
