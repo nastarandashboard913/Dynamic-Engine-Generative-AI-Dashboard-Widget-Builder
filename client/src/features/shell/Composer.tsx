@@ -36,11 +36,11 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="pointer-events-none absolute inset-x-0 bottom-5 z-30 flex justify-center px-6"
+      className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 sm:bottom-5 sm:px-6"
     >
       <div
         className={cn(
-          'pointer-events-auto w-full max-w-[760px] rounded-2xl border border-border',
+          'pointer-events-auto w-full max-w-composer rounded-2xl border border-border',
           'bg-bg-elevated/95 p-3 shadow-float backdrop-blur-xl',
         )}
       >
@@ -66,37 +66,39 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
 
         <div className="mt-1 flex items-center gap-2">
           <IconBtn label="Attach file">
-            <Paperclip className="size-[18px]" strokeWidth={2} />
+            <Paperclip className="size-icon" strokeWidth={2} />
           </IconBtn>
 
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-[13px] font-medium transition-colors hover:bg-surface-hover"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-body font-medium transition-colors hover:bg-surface-hover"
           >
             Full Analysis
-            <ChevronDown className="size-3.5 text-text-dim" strokeWidth={2.5} />
+            <ChevronDown className="size-icon-xs text-text-dim" strokeWidth={2.5} />
           </button>
 
-          <IconBtn label="Settings">
-            <Settings2 className="size-[18px]" strokeWidth={2} />
+          {/* Secondary controls fold away first so the prompt, mic and send
+           *  button always fit — even at 375px. */}
+          <IconBtn label="Settings" className="hidden sm:block">
+            <Settings2 className="size-icon" strokeWidth={2} />
           </IconBtn>
-          <IconBtn label="Model">
-            <Brain className="size-[18px]" strokeWidth={2} />
+          <IconBtn label="Model" className="hidden sm:block">
+            <Brain className="size-icon" strokeWidth={2} />
           </IconBtn>
 
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-[13px] font-medium transition-colors hover:bg-surface-hover"
+            className="hidden items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-body font-medium transition-colors hover:bg-surface-hover md:inline-flex"
           >
-            <Globe className="size-3.5" strokeWidth={2} />
+            <Globe className="size-icon-xs" strokeWidth={2} />
             EN
-            <ChevronDown className="size-3.5 text-text-dim" strokeWidth={2.5} />
+            <ChevronDown className="size-icon-xs text-text-dim" strokeWidth={2.5} />
           </button>
 
           <div className="flex-1" />
 
           <IconBtn label="Voice input">
-            <Mic className="size-[18px]" strokeWidth={2} />
+            <Mic className="size-icon" strokeWidth={2} />
           </IconBtn>
 
           <button
@@ -112,9 +114,9 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
             )}
           >
             {busy ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <ArrowUp className="size-4" strokeWidth={2.5} />
+              <ArrowUp className="size-icon-sm" strokeWidth={2.5} />
             )}
           </button>
         </div>
@@ -123,12 +125,23 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
   )
 }
 
-function IconBtn({ label, children }: { label: string; children: React.ReactNode }) {
+function IconBtn({
+  label,
+  children,
+  className,
+}: {
+  label: string
+  children: React.ReactNode
+  className?: string
+}) {
   return (
     <button
       type="button"
       aria-label={label}
-      className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-hover hover:text-text"
+      className={cn(
+        'rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-hover hover:text-text',
+        className,
+      )}
     >
       {children}
     </button>

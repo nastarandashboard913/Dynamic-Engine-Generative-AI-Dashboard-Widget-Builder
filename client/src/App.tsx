@@ -23,26 +23,63 @@ const DEFAULT_PROMPT = 'Which accounts are high-risk and need review?'
 function Workspace() {
   const { theme, setTheme } = useTheme()
   const [injectFaults, setInjectFaults] = useState(false)
+  // The only state the responsive shell needs. Both panels are STATIC at their
+  // respective breakpoints — these flags matter solely below them, where the
+  // panel becomes an overlay drawer.
+  const [navOpen, setNavOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+
   const stream = useDashboardStream()
   const { generate } = stream
 
+  const closePanels = useCallback(() => {
+    setNavOpen(false)
+    setHistoryOpen(false)
+  }, [])
+
   const run = useCallback(
-    (prompt: string) => void generate(prompt, injectFaults),
-    [generate, injectFaults],
+    (prompt: string) => {
+      // Selecting from a drawer should dismiss it, otherwise the result is
+      // hidden behind the thing that produced it.
+      closePanels()
+      void generate(prompt, injectFaults)
+    },
+    [generate, injectFaults, closePanels],
   )
 
-  // Generate once on mount so the workspace is populated on arrival.
   useEffect(() => {
     void generate(DEFAULT_PROMPT, false)
   }, [generate])
 
+  // Escape closes whichever drawer is open — expected of any overlay.
+  useEffect(() => {
+    if (!navOpen && !historyOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closePanels()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [navOpen, historyOpen, closePanels])
+
+  const drawerOpen = navOpen || historyOpen
+
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
       <Sidebar
         investigations={SIDEBAR_ITEMS}
         activeInvestigation="High Risk Accounts Review"
         onSelect={run}
+        open={navOpen}
+        onClose={closePanels}
       />
+
+      {/* Shared scrim. Hidden from xl up, where neither panel can be a drawer. */}
+      {drawerOpen && (
+        <button
+          type="button"
+          aria-label="Close panel"
+          onClick={closePanels}
+          className="fixed inset-0 z-40 bg-black/55 backdrop-blur-xs xl:hidden"
+        />
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
@@ -51,23 +88,34 @@ function Workspace() {
           onThemeChange={setTheme}
           injectFaults={injectFaults}
           onInjectFaultsChange={setInjectFaults}
+          onOpenNav={() => setNavOpen(true)}
+          onOpenHistory={() => setHistoryOpen(true)}
         />
 
         {/* The canvas is its own scroll container so the shell stays fixed and
-         *  the page body never scrolls — which is also what keeps `overflow-x:
-         *  clip` on body from creating a horizontal scroll leak. */}
-        <main className="relative min-h-0 flex-1 px-6 pb-6">
-          <div className="relative h-full overflow-y-auto overflow-x-hidden rounded-2xl border border-border bg-bg/40 px-6 py-6">
-            <Dashboard stream={stream} />
-            {/* Breathing room so the floating composer never covers content. */}
-            <div className="h-28" />
+         *  the page body never scrolls — which is also what keeps
+         *  `overflow-x: clip` on body from creating a horizontal scroll leak. */}
+        <main className="relative min-h-0 flex-1 px-3 pb-3 sm:px-6 sm:pb-6">
+          <div className="relative h-full overflow-y-auto overflow-x-hidden rounded-2xl border border-border bg-bg/40 px-3 py-4 sm:px-6 sm:py-6">
+            {/* Caps line length on very wide displays; below the cap this is a
+             *  no-op, so it costs nothing at normal sizes. */}
+            <div className="mx-auto w-full max-w-canvas">
+              <Dashboard stream={stream} />
+              {/* Breathing room so the floating composer never covers content. */}
+              <div className="h-28" />
+            </div>
           </div>
 
           <Composer onSubmit={run} busy={stream.status === 'streaming'} />
         </main>
       </div>
 
-      <HistoryPanel activeId={null} onSelect={run} />
+      <HistoryPanel
+        activeId={null}
+        onSelect={run}
+        open={historyOpen}
+        onClose={closePanels}
+      />
     </div>
   )
 }
@@ -78,13 +126,10 @@ export default function App() {
      * `reducedMotion="user"` is not optional polish.
      *
      * The CSS `prefers-reduced-motion` block in index.css only neutralises CSS
-     * transitions and animations. Framer Motion drives its animations from
-     * JavaScript by writing inline styles frame by frame, so it never sees that
-     * rule — without this, a user who has asked the OS for reduced motion still
+     * transitions. Framer Motion drives its animations from JavaScript by
+     * writing inline styles frame by frame, so it never sees that rule —
+     * without this, a user who has asked the OS for reduced motion still
      * receives every spring, fade and layout animation in the app.
-     *
-     * Setting it here makes Framer read the media query itself and collapse
-     * transform/opacity animations to instant state changes, app-wide.
      */
     <MotionConfig reducedMotion="user">
       <ToastProvider>

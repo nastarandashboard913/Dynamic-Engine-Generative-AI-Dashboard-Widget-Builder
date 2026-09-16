@@ -46,8 +46,8 @@ function renderSilhouette(type: string) {
     case 'NARRATIVE_HEADER':
       return (
         <div className="flex flex-col gap-3">
-          <Bar className="h-8 w-[65%]" />
-          <Bar className="h-4 w-[45%]" />
+          <Bar className="h-8 w-2/3" />
+          <Bar className="h-4 w-1/2" />
           <div className="mt-1 flex gap-2">
             <Bar className="h-7 w-32 rounded-chip" />
             <Bar className="h-7 w-52 rounded-chip" />
@@ -71,11 +71,13 @@ function renderSilhouette(type: string) {
           <Bar className="h-8 w-64 rounded-chip" />
           <div className="flex flex-col gap-2 pt-1">
             {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Bar className="h-4 flex-[3]" />
-                <Bar className="h-4 flex-[2]" />
-                <Bar className="h-4 flex-[2]" />
-                <Bar className="h-4 flex-1" />
+              // Grid column spans express the 3:2:2:1 ratio without arbitrary
+              // flex values, and match how the real table is laid out.
+              <div key={i} className="grid grid-cols-8 items-center gap-4">
+                <Bar className="col-span-3 h-4" />
+                <Bar className="col-span-2 h-4" />
+                <Bar className="col-span-2 h-4" />
+                <Bar className="col-span-1 h-4" />
               </div>
             ))}
           </div>

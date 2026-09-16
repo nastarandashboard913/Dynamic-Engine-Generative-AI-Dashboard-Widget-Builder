@@ -22,12 +22,12 @@ export function MetricCard({ title, data }: WidgetProps<MetricCardData>) {
   return (
     <WidgetCard verified={false} className="group" bodyClassName="flex flex-col justify-between">
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-dim">
+        <p className="text-micro font-medium uppercase tracking-label text-text-dim">
           {title}
         </p>
 
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="numeric text-[30px] font-semibold leading-none text-text">
+          <span className="numeric text-metric font-semibold text-text">
             {value}
           </span>
           {unit && <span className="text-xs text-text-muted">{unit}</span>}
@@ -36,7 +36,7 @@ export function MetricCard({ title, data }: WidgetProps<MetricCardData>) {
         <div className="mt-2 h-4">
           {trend ? (
             <span className={cn('inline-flex items-center gap-1 text-xs font-medium', ACCENT[status])}>
-              <TrendIcon className="size-3.5" strokeWidth={2.5} />
+              <TrendIcon className="size-icon-xs" strokeWidth={2.5} />
               <span className="numeric">{trend.pct}</span>
             </span>
           ) : caption ? (

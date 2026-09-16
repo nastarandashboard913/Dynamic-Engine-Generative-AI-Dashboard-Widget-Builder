@@ -25,7 +25,7 @@ const TONE: Record<Status, string> = {
 export function NarrativeHeader({ data }: WidgetProps<NarrativeHeaderData>) {
   return (
     <div className="px-1">
-      <h1 className="text-balance text-[28px] font-semibold leading-tight tracking-tight text-text sm:text-[32px]">
+      <h1 className="text-balance text-headline font-semibold tracking-tight text-text sm:text-headline-lg">
         {data.headline}
       </h1>
 
@@ -42,13 +42,13 @@ export function NarrativeHeader({ data }: WidgetProps<NarrativeHeaderData>) {
                 key={chip.label}
                 className={cn(
                   'inline-flex items-center gap-2 rounded-chip border border-border bg-surface/70 px-3 py-1.5',
-                  'text-[13px] font-medium text-text backdrop-blur-sm transition-colors',
+                  'text-body font-medium text-text backdrop-blur-sm transition-colors',
                   expandable && 'cursor-pointer hover:bg-surface-hover',
                 )}
               >
-                <Icon className={cn('size-[15px] shrink-0', TONE[chip.tone])} strokeWidth={2} />
+                <Icon className={cn('size-icon-xs shrink-0', TONE[chip.tone])} strokeWidth={2} />
                 {chip.label}
-                {expandable && <ChevronDown className="size-3.5 text-text-dim" strokeWidth={2.5} />}
+                {expandable && <ChevronDown className="size-icon-xs text-text-dim" strokeWidth={2.5} />}
               </span>
             )
           })}

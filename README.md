@@ -275,6 +275,39 @@ Three surfaces use it:
 Pending state is signalled by a slight opacity change rather than a spinner or a
 disabled control — the interaction must stay responsive.
 
+### Responsive layout
+
+Target range is 375px to 4K. Three states, and the panels fold at *different*
+breakpoints so the workspace degrades in priority order rather than all at once:
+
+| Viewport | Sidebar | History panel |
+|---|---|---|
+| ≥ 1280px (`xl`) | docked | docked |
+| 1024–1280px (`lg`) | docked | drawer |
+| < 1024px | drawer | drawer |
+
+Each panel is **one element with two behaviours, switched entirely in CSS**.
+`lg:static lg:translate-x-0 lg:transition-none` turns the drawer mechanics off at
+the breakpoint; below it, the same element is a fixed overlay driven by a
+transform. There is no media-query listener, no JS branch and no separate mobile
+component to keep in sync — the only JavaScript involved is the boolean that
+flips one class, so resizing costs a style recalculation rather than a re-render.
+
+Two details that are easy to get wrong:
+
+- **Closed drawers use `visibility: hidden`, not just a transform.** A panel that
+  is off-screen but still focusable is a keyboard trap: tabbing walks into an
+  invisible menu. `invisible` removes it from the tab order.
+- **The transition is `transition-all`, not `transition-transform`.** Visibility
+  interpolates specially — if either endpoint is visible the element stays
+  visible for the whole transition — so the panel slides fully out and only then
+  hides. Transitioning transform alone makes it vanish instantly on close.
+
+Controls shed in priority order as width drops (breadcrumb trail → database
+selector → language → share → composer secondaries), so the prompt, mic and send
+button still fit at 375px. At the top end, `max-w-canvas` (110rem) caps line
+length so the grid does not stretch across a 4K display.
+
 ### Design token system
 
 Three themes (`dark`, `light`, `hc`) are defined as CSS custom properties on
@@ -308,6 +341,15 @@ fails WCAG AA against white.
 
 A small inline script in `index.html` applies the stored theme before first paint,
 so there is no flash of the default palette on load.
+
+A second, non-`inline` `@theme` block holds the **static scale**: shell geometry
+(`w-sidebar`), icon steps (`size-icon`), the type ramp (`text-title`,
+`text-micro`, `text-metric`) and `tracking-label`. These exist so components
+never hardcode arbitrary values — `w-[264px]` states a number without saying what
+it means and drifts the moment it is copied, whereas `w-sidebar` names the intent
+and has exactly one definition. The codebase contains **zero** arbitrary Tailwind
+values; the reference design's half-steps between Tailwind's defaults live in the
+token scale instead.
 
 ### Micro-interactions and motion
 
@@ -480,12 +522,10 @@ share no code.
 
 Stated plainly rather than left to be discovered.
 
-**The application shell is not responsive.** The widget grid adapts correctly
-across breakpoints, but the sidebar (`264px`) and history panel (`300px`) are
-fixed and never collapse — 564px of chrome that does not yield. Below roughly
-1100px the canvas is cramped; on tablet and phone the layout breaks. The collapse
-controls on both panels are currently decorative. This is the single largest
-outstanding item.
+**Compound components are not used.** `WidgetCard` is a single props-driven
+component rather than a compound (`<Card><Card.Header/>…`) API. The current shape
+is adequate for six archetypes; a compound API would pay off once widgets need
+to compose their own chrome.
 
 **Main bundle is 603kB (188kB gzip).** Widget archetypes are code-split into
 their own chunks, but Framer Motion, dnd-kit, Radix and zod all land in the entry

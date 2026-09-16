@@ -87,7 +87,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
       bodyClassName="flex flex-col min-h-0"
       actions={
         <div className="relative mr-2">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-dim" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-icon-xs -translate-y-1/2 text-text-dim" />
           <input
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -96,7 +96,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
             className={cn(
               'w-44 rounded-chip border border-border bg-surface-sunken py-1.5 pl-8 pr-2.5',
               'text-xs text-text placeholder:text-text-dim',
-              'transition-[width,border-color] duration-200 focus:w-56 focus:border-border-strong',
+              'transition-all duration-200 focus:w-56 focus:border-border-strong',
             )}
           />
         </div>
@@ -118,7 +118,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
               disabled={!col.sortable}
               onClick={() => col.sortable && toggleSort(col.key)}
               className={cn(
-                'flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.07em]',
+                'flex items-center gap-1 text-micro font-medium uppercase tracking-label',
                 'transition-colors',
                 col.align === 'right' && 'justify-end',
                 col.sortable ? 'cursor-pointer hover:text-text' : 'cursor-default',
@@ -166,7 +166,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
                     <span
                       key={col.key}
                       className={cn(
-                        'truncate text-[13px]',
+                        'truncate text-body',
                         col.numeric && 'numeric',
                         col.align === 'right' && 'text-right',
                         col.key === data.filterKey
@@ -184,7 +184,7 @@ export function DataTable({ title, data }: WidgetProps<DataTableData>) {
         )}
       </div>
 
-      <p className="shrink-0 pt-2.5 text-[11px] text-text-dim">
+      <p className="shrink-0 pt-2.5 text-micro text-text-dim">
         <span className="numeric">{rows.length.toLocaleString()}</span> of{' '}
         <span className="numeric">{data.rows.length.toLocaleString()}</span> accounts
         {virtualizer.getVirtualItems().length > 0 && (

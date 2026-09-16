@@ -37,7 +37,7 @@ export function DistributionChart({ title, data }: WidgetProps<DistributionChart
       </div>
 
       <div
-        className="relative flex min-h-0 flex-1 items-end gap-[3px] pt-2"
+        className="relative flex min-h-0 flex-1 items-end gap-0.5 pt-2"
         onMouseLeave={() => setHovered(null)}
         role="img"
         aria-label={`${title ?? 'Distribution'}: ${data.bins.length} bins, peak ${max.toLocaleString()}`}
@@ -55,7 +55,7 @@ export function DistributionChart({ title, data }: WidgetProps<DistributionChart
             >
               <div
                 className={cn(
-                  'w-full rounded-t-[3px] transition-[opacity,filter] duration-200',
+                  'w-full rounded-t-xs transition-all duration-200',
                   isPeak ? 'bg-chart-bar-peak' : 'bg-chart-bar',
                   hovered !== null && !isHovered ? 'opacity-40' : 'opacity-100',
                 )}

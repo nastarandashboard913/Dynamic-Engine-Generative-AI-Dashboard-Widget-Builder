@@ -82,7 +82,7 @@ export function WidgetGrid({ placeholders, widgets, order, onReorder }: WidgetGr
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={ordered.map((p) => p.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-12 gap-3 sm:gap-4">
           <AnimatePresence initial={false}>
             {ordered.map((placeholder) => {
               const widget = widgets.get(placeholder.id)

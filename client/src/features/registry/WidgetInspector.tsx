@@ -47,24 +47,31 @@ export function WidgetInspector({ envelope, open, onOpenChange }: WidgetInspecto
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="overlay-anim fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px]" />
+        <Dialog.Overlay className="overlay-anim fixed inset-0 z-40 bg-black/55 backdrop-blur-xs" />
 
+        {/* Content is a full-screen flex centering container and the visual
+         *  panel is its child. Centring with flexbox instead of
+         *  left-1/2 + -translate-x-1/2 means the panel needs no min()/calc()
+         *  width and no viewport-unit max-height: `max-w-dialog` caps it on
+         *  desktop and the padding handles small screens. */}
         <Dialog.Content
-          className={cn(
-            'dialog-anim fixed left-1/2 top-1/2 z-50 w-[min(640px,calc(100vw-2rem))]',
-            'max-h-[min(80vh,720px)] -translate-x-1/2 -translate-y-1/2',
-            'flex flex-col overflow-hidden rounded-2xl border border-border bg-bg-elevated shadow-float',
-          )}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
         >
+          <div
+            className={cn(
+              'dialog-anim flex max-h-full w-full max-w-dialog flex-col overflow-hidden',
+              'rounded-2xl border border-border bg-bg-elevated shadow-float',
+            )}
+          >
           <header className="flex items-start gap-3 border-b border-border px-5 py-4">
             <div className="min-w-0 flex-1">
-              <Dialog.Title className="truncate text-[15px] font-semibold tracking-tight">
+              <Dialog.Title className="truncate text-title font-semibold tracking-tight">
                 {envelope.title ?? 'Widget schema'}
               </Dialog.Title>
               <Dialog.Description className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted">
                 <span
                   className={cn(
-                    'rounded-md px-1.5 py-0.5 font-mono text-[11px]',
+                    'rounded-md px-1.5 py-0.5 font-mono text-micro',
                     known ? 'bg-accent-soft text-accent' : 'bg-warn-soft text-warn',
                   )}
                 >
@@ -102,9 +109,10 @@ export function WidgetInspector({ envelope, open, onOpenChange }: WidgetInspecto
             </Dialog.Close>
           </header>
 
-          <pre className="min-h-0 flex-1 overflow-auto bg-surface-sunken px-5 py-4 font-mono text-[12px] leading-relaxed text-text-muted">
-            {json}
-          </pre>
+            <pre className="min-h-0 flex-1 overflow-auto bg-surface-sunken px-5 py-4 font-mono text-mini leading-relaxed text-text-muted">
+              {json}
+            </pre>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

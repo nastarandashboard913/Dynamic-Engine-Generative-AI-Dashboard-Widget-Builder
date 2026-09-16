@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="false"
-        className="pointer-events-none fixed bottom-5 right-5 z-50 flex w-[min(22rem,calc(100vw-2.5rem))] flex-col gap-2"
+        className="pointer-events-none fixed inset-x-5 bottom-5 z-50 ml-auto flex w-full max-w-sm flex-col gap-2"
       >
         <AnimatePresence initial={false}>
           {toasts.map((toast) => (
@@ -83,9 +83,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               )}
             >
               {toast.tone === 'error' ? (
-                <AlertCircle className="mt-0.5 size-[18px] shrink-0 text-danger" strokeWidth={2} />
+                <AlertCircle className="mt-0.5 size-icon shrink-0 text-danger" strokeWidth={2} />
               ) : (
-                <CheckCircle2 className="mt-0.5 size-[18px] shrink-0 text-success" strokeWidth={2} />
+                <CheckCircle2 className="mt-0.5 size-icon shrink-0 text-success" strokeWidth={2} />
               )}
 
               <div className="min-w-0 flex-1">

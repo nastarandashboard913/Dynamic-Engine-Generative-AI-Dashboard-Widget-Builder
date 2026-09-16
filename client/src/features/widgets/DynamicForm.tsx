@@ -87,8 +87,8 @@ export function DynamicForm({ id, title, subtitle, data }: WidgetProps<DynamicFo
           className={cn(
             'mt-1 inline-flex items-center justify-center gap-2 rounded-chip px-4 py-2.5',
             'bg-accent text-sm font-medium text-accent-fg',
-            'transition-[background-color,transform] duration-150 hover:bg-accent-hover',
-            'active:scale-[0.985] disabled:opacity-60',
+            'transition-all duration-150 hover:bg-accent-hover',
+            'active:scale-95 disabled:opacity-60',
           )}
         >
           {submitting && <Loader2 className="size-4 animate-spin" />}
@@ -159,11 +159,11 @@ function Field({ field, value, error, onChange }: FieldProps) {
             checked={Boolean(value)}
             onCheckedChange={(v) => onChange(field.name, v)}
             className={cn(
-              'relative h-[22px] w-[38px] shrink-0 rounded-full border border-border transition-colors duration-200',
+              'relative h-5.5 w-9.5 shrink-0 rounded-full border border-border transition-colors duration-200',
               'data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=unchecked]:bg-surface-sunken',
             )}
           >
-            <Switch.Thumb className="block size-[16px] translate-x-[2px] rounded-full bg-text-muted transition-transform duration-200 will-change-transform data-[state=checked]:translate-x-[18px] data-[state=checked]:bg-accent-fg" />
+            <Switch.Thumb className="block size-4 translate-x-0.5 rounded-full bg-text-muted transition-transform duration-200 will-change-transform data-[state=checked]:translate-x-4.5 data-[state=checked]:bg-accent-fg" />
           </Switch.Root>
         )}
       </div>
@@ -183,7 +183,7 @@ function Field({ field, value, error, onChange }: FieldProps) {
           </Slider.Track>
           <Slider.Thumb
             aria-label={field.label}
-            className="block size-4 rounded-full border-2 border-accent bg-bg-elevated transition-shadow hover:shadow-[0_0_0_4px_var(--accent-soft)] focus-visible:shadow-[0_0_0_4px_var(--accent-soft)]"
+            className="block size-4 rounded-full border-2 border-accent bg-bg-elevated transition-shadow hover:shadow-focus-ring focus-visible:shadow-focus-ring"
           />
         </Slider.Root>
       )}
@@ -229,7 +229,7 @@ function Field({ field, value, error, onChange }: FieldProps) {
           initial={false}
           animate={{ opacity: error ? 1 : 0 }}
           transition={{ duration: 0.15 }}
-          className="text-[11px] text-danger"
+          className="text-micro text-danger"
         >
           {error}
         </motion.p>

@@ -33,7 +33,7 @@ export function FallbackWidget({ title, reason, onRetry }: FallbackWidgetProps) 
         {/* Validation issues are developer-facing: useful while building a new
          *  archetype, noise for an end user. */}
         {import.meta.env.DEV && reason.kind === 'invalid-payload' && reason.issues.length > 0 && (
-          <ul className="mt-1 max-h-24 w-full overflow-auto rounded-md bg-surface-sunken px-3 py-2 font-mono text-[11px] leading-relaxed text-text-dim">
+          <ul className="mt-1 max-h-24 w-full overflow-auto rounded-md bg-surface-sunken px-3 py-2 font-mono text-micro leading-relaxed text-text-dim">
             {reason.issues.map((issue) => (
               <li key={issue}>• {issue}</li>
             ))}

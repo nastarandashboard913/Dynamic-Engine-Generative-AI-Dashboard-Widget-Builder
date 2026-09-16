@@ -186,25 +186,30 @@
   }
 
   /* Rises and settles rather than scaling from centre — a centre-scale on a
-   * large panel reads as a popup; this reads as a sheet arriving. */
+   * large panel reads as a popup; this reads as a sheet arriving.
+   *
+   * No translate(-50%, -50%) here: the panel is centred by its flex parent, so
+   * these keyframes only need to express the motion itself. Baking the
+   * centring offset into the animation would couple it to one positioning
+   * strategy and break the moment that changed. */
   @keyframes dialog-in {
     from {
       opacity: 0;
-      transform: translate(-50%, -48%) scale(0.97);
+      transform: translateY(0.5rem) scale(0.97);
     }
     to {
       opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      transform: translateY(0) scale(1);
     }
   }
   @keyframes dialog-out {
     from {
       opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+      transform: translateY(0) scale(1);
     }
     to {
       opacity: 0;
-      transform: translate(-50%, -50%) scale(0.98);
+      transform: translateY(0.25rem) scale(0.98);
     }
   }
 }

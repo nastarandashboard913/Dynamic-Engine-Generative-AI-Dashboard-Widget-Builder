@@ -186,12 +186,62 @@
 
   --shadow-card: var(--shadow-card);
   --shadow-float: var(--shadow-float);
+  /* Focus halo for custom controls that cannot use `outline` cleanly */
+  --shadow-focus-ring: 0 0 0 4px var(--accent-soft);
 
   --font-sans: 'Inter var', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Menlo', monospace;
 
   /* Shared easing so every transition in the app agrees on a feel */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------------------
+ * Static scale tokens.
+ *
+ * A separate, non-`inline` @theme block: these are fixed values rather than
+ * runtime indirections, so Tailwind emits them directly.
+ *
+ * Everything here exists to keep arbitrary values out of components. A literal
+ * `w-[264px]` states a number without saying what it means and drifts the moment
+ * it is copied; `w-sidebar` names the intent and has exactly one definition.
+ * ------------------------------------------------------------------------ */
+@theme {
+  /* Shell geometry — referenced by the layout, never re-typed */
+  --spacing-sidebar: 16.5rem; /* 264px */
+  --spacing-history: 18.75rem; /* 300px */
+  --spacing-composer: 47.5rem; /* 760px */
+
+  /* Icon sizes. Lucide renders on a 24px grid; these are the three steps the
+   * design actually uses. */
+  --spacing-icon-xs: 0.875rem; /* 14px */
+  --spacing-icon-sm: 1rem; /* 16px */
+  --spacing-icon: 1.125rem; /* 18px */
+
+  /* Canvas cap. Without it the grid stretches across a 4K display and line
+   * lengths become unreadable. */
+  --container-canvas: 110rem; /* 1760px */
+  --container-dialog: 40rem; /* 640px */
+
+  /* Type scale. The reference design sits on half-steps between Tailwind's
+   * defaults, which is what drove the arbitrary values in the first place. */
+  --text-micro: 0.6875rem; /* 11px */
+  --text-micro--line-height: 1rem;
+  --text-mini: 0.75rem; /* 12px */
+  --text-mini--line-height: 1rem;
+  --text-body: 0.8125rem; /* 13px */
+  --text-body--line-height: 1.25rem;
+  --text-title: 0.9375rem; /* 15px */
+  --text-title--line-height: 1.375rem;
+  --text-metric: 1.875rem; /* 30px */
+  --text-metric--line-height: 1;
+  --text-headline: 1.75rem; /* 28px */
+  --text-headline--line-height: 1.15;
+  --text-headline-lg: 2rem; /* 32px */
+  --text-headline-lg--line-height: 1.15;
+
+  /* Tracking for the uppercase micro-labels */
+  --tracking-label: 0.08em;
 }
 
 /* Variants for the rare case a component needs a per-theme override */
