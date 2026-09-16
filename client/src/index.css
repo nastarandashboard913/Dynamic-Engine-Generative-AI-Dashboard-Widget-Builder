@@ -1,0 +1,210 @@
+@import 'tailwindcss';
+@import './styles/tokens.css';
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+
+  html {
+    /* Theme swaps flip ~30 custom properties at once. Without this the browser
+     * paints the new palette instantly and it reads as a flash; 160ms of
+     * cross-fade on the two properties that dominate the screen hides it. */
+    transition: background-color 160ms var(--ease-out-soft),
+      color 160ms var(--ease-out-soft);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Requirement: no horizontal scroll leaks. `clip` (not `hidden`) contains
+     * overflow without silently creating a scroll container, which would break
+     * `position: sticky` on the table header. */
+    overflow-x: clip;
+  }
+
+  /* Ambient glow behind the workspace. Painted on a pseudo-element so it never
+   * participates in layout and cannot contribute to CLS. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 420px;
+    background: var(--glow);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Numerics align in columns only if the glyphs are the same width. */
+  .numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-dim);
+    background-clip: content-box;
+  }
+}
+
+/* Honour the OS setting. Framer Motion reads this too, via useReducedMotion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /* Skeleton shimmer. Animates `transform` only — a background-position or
+   * width animation would run on the compositor's slow path and, worse, invite
+   * layout work on every frame while the stream is still arriving. */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: color-mix(in oklab, var(--text-dim) 12%, transparent);
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--text-dim) 10%, transparent),
+      transparent
+    );
+    animation: shimmer 1.6s var(--ease-out-soft) infinite;
+  }
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------------------
+   * Radix enter/exit animations.
+   *
+   * Written as real keyframes rather than pulling in `tailwindcss-animate`,
+   * whose `animate-in` / `fade-in-0` utilities are a v3-era plugin. Keeping
+   * these in CSS has a second benefit: the `prefers-reduced-motion` block above
+   * neutralises them for free, whereas a JS-driven animation would need to
+   * query the media list itself.
+   *
+   * Radix keeps an element mounted while `data-state="closed"` animates, so the
+   * exit keyframes actually play instead of the node vanishing.
+   * ------------------------------------------------------------------------ */
+  .pop-anim[data-state='open'] {
+    animation: pop-in 150ms var(--ease-out-soft);
+  }
+  .pop-anim[data-state='closed'] {
+    animation: pop-out 110ms ease-in forwards;
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  @keyframes pop-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  .overlay-anim[data-state='open'] {
+    animation: overlay-in 180ms var(--ease-out-soft);
+  }
+  .overlay-anim[data-state='closed'] {
+    animation: overlay-out 140ms ease-in forwards;
+  }
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  .dialog-anim[data-state='open'] {
+    animation: dialog-in 220ms var(--ease-out-soft);
+  }
+  .dialog-anim[data-state='closed'] {
+    animation: dialog-out 150ms ease-in forwards;
+  }
+
+  /* Rises and settles rather than scaling from centre — a centre-scale on a
+   * large panel reads as a popup; this reads as a sheet arriving. */
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -48%) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  @keyframes dialog-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.98);
+    }
+  }
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Engine — Generative BI Workspace</title>
+    <meta
+      name="description"
+      content="Adaptive workspace rendering real-time BI widgets from streamed LLM schemas."
+    />
+    <script>
+      // Applied before first paint. Reading the stored theme from React would
+      // mean the document renders once in the default palette and then swaps —
+      // a visible flash on every load.
+      try {
+        var t = localStorage.getItem('dynamic-engine:theme')
+        if (t === 'light' || t === 'dark' || t === 'hc') {
+          document.documentElement.dataset.theme = t
+        }
+      } catch (_) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

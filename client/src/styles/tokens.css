@@ -1,0 +1,199 @@
+/* ============================================================================
+ * Design tokens
+ * ---------------------------------------------------------------------------
+ * Single source of truth for the visual system. Three themes are expressed as
+ * three sets of CSS custom properties on [data-theme]; nothing else in the app
+ * hardcodes a colour. Swapping themes is one attribute write on <html>, so it
+ * costs a style recalc and never a re-render or a layout pass.
+ *
+ * Tokens are SEMANTIC (--surface, --text-muted), never literal (--orange-500).
+ * That is what makes a high-contrast theme possible without touching a single
+ * component: the components ask for meaning, the theme decides the pixels.
+ * ========================================================================= */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Surfaces — warm near-black, matching the reference UI */
+  --bg: #0d0b0a;
+  --bg-elevated: #151211;
+  --surface: #1a1614;
+  --surface-hover: #221d1a;
+  --surface-sunken: #100d0c;
+
+  /* Borders */
+  --border: #2a2320;
+  --border-strong: #3a312c;
+
+  /* Text */
+  --text: #f5f0ea;
+  --text-muted: #9a8f85;
+  --text-dim: #7a6f66;
+
+  /* Accent — the amber the reference UI is built around */
+  --accent: #e8833a;
+  --accent-hover: #f2954f;
+  --accent-fg: #1a0f06;
+  --accent-soft: rgb(232 131 58 / 0.12);
+
+  /* Status */
+  --success: #4ade80;
+  --success-soft: rgb(74 222 128 / 0.12);
+  --danger: #f87171;
+  --danger-soft: rgb(248 113 113 / 0.12);
+  --warn: #fbbf24;
+  --warn-soft: rgb(251 191 36 / 0.12);
+
+  /* Data visualisation */
+  --chart-bar: #e8833a;
+  --chart-bar-peak: #f7a55f;
+  --chart-grid: #2a2320;
+
+  /* Effects */
+  --ring: #e8833a;
+  --glow: radial-gradient(
+    60% 55% at 50% 0%,
+    rgb(232 131 58 / 0.16) 0%,
+    rgb(232 131 58 / 0.05) 42%,
+    transparent 72%
+  );
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+  --shadow-float: 0 8px 40px -8px rgb(0 0 0 / 0.6);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #faf8f5;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f5f1ec;
+  --surface-sunken: #f2eee8;
+
+  --border: #e5ded5;
+  --border-strong: #d0c6ba;
+
+  --text: #1c1714;
+  --text-muted: #6b6259;
+  --text-dim: #8a8078;
+
+  /* Darkened vs. dark theme: the reference amber fails AA on white */
+  --accent: #b45309;
+  --accent-hover: #92400e;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(180 83 9 / 0.1);
+
+  --success: #15803d;
+  --success-soft: rgb(21 128 61 / 0.1);
+  --danger: #b91c1c;
+  --danger-soft: rgb(185 28 28 / 0.1);
+  --warn: #b45309;
+  --warn-soft: rgb(180 83 9 / 0.1);
+
+  --chart-bar: #d97706;
+  --chart-bar-peak: #b45309;
+  --chart-grid: #e5ded5;
+
+  --ring: #b45309;
+  --glow: none;
+  --shadow-card: 0 1px 2px rgb(28 23 20 / 0.06), 0 8px 24px -16px rgb(28 23 20 / 0.12);
+  --shadow-float: 0 8px 40px -8px rgb(28 23 20 / 0.18);
+}
+
+/* High contrast: not "dark theme but bolder". Muted text is removed entirely
+ * (--text-muted resolves to full white), borders become 1px solid white so
+ * every region is delineated without relying on fill, and decorative glow is
+ * switched off because it reduces effective contrast behind text. */
+[data-theme='hc'] {
+  color-scheme: dark;
+
+  --bg: #000000;
+  --bg-elevated: #000000;
+  --surface: #0a0a0a;
+  --surface-hover: #1f1f1f;
+  --surface-sunken: #000000;
+
+  --border: #ffffff;
+  --border-strong: #ffffff;
+
+  --text: #ffffff;
+  --text-muted: #ffffff;
+  --text-dim: #f0f0f0;
+
+  --accent: #ffb000;
+  --accent-hover: #ffc733;
+  --accent-fg: #000000;
+  --accent-soft: rgb(255 176 0 / 0.2);
+
+  --success: #00ff88;
+  --success-soft: rgb(0 255 136 / 0.2);
+  --danger: #ff6b6b;
+  --danger-soft: rgb(255 107 107 / 0.2);
+  --warn: #ffdd00;
+  --warn-soft: rgb(255 221 0 / 0.2);
+
+  --chart-bar: #ffb000;
+  --chart-bar-peak: #ffdd00;
+  --chart-grid: #ffffff;
+
+  --ring: #ffdd00;
+  --glow: none;
+  --shadow-card: none;
+  --shadow-float: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Bridge tokens into Tailwind.
+ *
+ * `@theme inline` is load-bearing: it makes `bg-surface` compile to
+ * `background-color: var(--surface)` rather than baking the hex in at build
+ * time. Without `inline`, utilities would freeze the dark values and the theme
+ * toggle would do nothing.
+ * ------------------------------------------------------------------------ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+
+  --color-chart-bar: var(--chart-bar);
+  --color-chart-bar-peak: var(--chart-bar-peak);
+  --color-chart-grid: var(--chart-grid);
+
+  --radius-card: 14px;
+  --radius-chip: 10px;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+
+  --font-sans: 'Inter var', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Menlo', monospace;
+
+  /* Shared easing so every transition in the app agrees on a feel */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Variants for the rare case a component needs a per-theme override */
+@custom-variant hc (&:where([data-theme='hc'], [data-theme='hc'] *));
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
