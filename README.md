@@ -72,6 +72,13 @@ Run from the repository root.
 | `npm run build` | production build of the client |
 | `npm run typecheck` | `tsc -b` across both packages |
 | `npm run docker:up` / `npm run docker:down` | Compose up / tear down |
+| `npm run perf` | LCP, CLS, long tasks and theme-switch cost, at two viewports |
+| `npm run smoke` | 19 functional checks against the running stack |
+
+The last two drive headless Chromium via Playwright and expect the stack to be
+running. Playwright has no postinstall step, so `npm run setup` does not
+download a browser; run `npx playwright install chromium` inside `client/` the
+first time you use them.
 
 ---
 
@@ -93,10 +100,11 @@ Run from the repository root.
 └── client/                     # React 19 + TypeScript + Tailwind v4
     ├── Dockerfile
     ├── nginx.conf              # SPA fallback + SSE-safe API proxy
+    ├── scripts/                # perf + smoke measurement (Playwright)
     └── src/
         ├── types/schema.ts     # zod schemas — every payload is validated here
         ├── styles/tokens.css   # design tokens, three themes
-        ├── lib/                # api client, cn helper
+        ├── lib/                # api client, cn helper, perf instrumentation
         ├── hooks/              # stream, optimistic state, theme, toasts
         ├── components/         # WidgetCard, Sparkline
         └── features/
@@ -104,6 +112,7 @@ Run from the repository root.
             ├── widgets/        # six archetype renderers
             ├── layout/         # grid matrix + drag-and-drop
             ├── shell/          # sidebar, top bar, history, composer
+            ├── devtools/       # live performance overlay
             └── dashboard/      # stream ↔ grid orchestration
 ```
 
@@ -353,6 +362,14 @@ Three themes (`dark`, `light`, `hc`) are defined as CSS custom properties on
 write on `<html>`: it costs a style recalculation, never a React re-render or a
 layout pass. No component anywhere reads a colour value.
 
+That property has to be enforced, not just intended. Theme state lives in a
+module-level store (`hooks/useTheme.ts`), and the attribute is written
+**synchronously in the event handler** so the repaint starts in the same task as
+the click. The only subscriber is the `ThemeSwitcher` component, which renders
+which theme is active. An earlier version held this in `useState` at the root,
+so one click re-rendered the entire workspace — including nine `useSortable`
+hooks — before an effect applied the attribute that does the actual work.
+
 Tokens are **semantic** (`--surface`, `--text-muted`), never literal
 (`--orange-500`). That is precisely what makes a high-contrast theme achievable
 without touching a single component.
@@ -425,6 +442,52 @@ for reduced motion still receives every animation.
 Fixed row height in the table is a deliberate simplification: variable heights
 need per-row measurement, and measurement during a stream is precisely what
 causes layout shift.
+
+#### Measured results
+
+Captured with `npm run perf` (Playwright + `PerformanceObserver`) against the
+production build behind nginx:
+
+| Metric | Desktop (1440) | Mobile (375) | Budget |
+|---|---|---|---|
+| LCP | **0.27s** | **0.27s** | ≤ 2.5s |
+| CLS | **0.0022** | **0.0030** | ≤ 0.1 |
+| Long tasks | **0** | **0** | — |
+| Theme switch → paint | **34ms** | **35ms** | ≤ 100ms |
+| DOM elements | **725** | **725** | — |
+
+Headless Chromium on localhost, so absolute numbers are optimistic; the ratios
+and the relative cost of each change are what these are for.
+
+#### What measurement actually caught
+
+Instrumentation was added because "zero CLS" and "sub-100ms response" were
+architectural arguments with no numbers behind them. The first run found a bug
+that had survived eleven commits:
+
+**The table was not virtualising at all.** Its scroll container was `flex-1`
+inside a cell that only had `min-height`, so nothing gave it a definite height.
+It expanded to fit all 5,000 rows — 220,142px — the virtualizer measured that as
+its viewport, concluded every row was visible, and mounted all of them.
+
+The code was correct in isolation: `useVirtualizer`, `overscan`, translateY
+positioning, even a footer reporting the row count. It simply never had a
+bounded container to work against, and nothing failed loudly. The cost was
+**30,635 DOM elements** and a **1.2-second** restyle on every theme change.
+
+Fixing it (`height` rather than `min-height` on the table's cell) cut the DOM by
+42× and the theme switch by 35×. Two other findings from the same run:
+
+- Six of nine widgets rendered **taller than their declared `minHeight`**, since
+  `min-height` is a floor rather than a fixed box. Declared heights now match
+  measured render heights at both breakpoints.
+- The server slept 420ms before sending the first widget — which is the LCP
+  element — charging that pause directly to LCP. The first widget now ships
+  immediately; everything after it still staggers.
+
+A hypothesis that measurement **disproved**: schema validation was assumed to be
+the expensive step. It is 3.1ms for 5,000 rows. The optimisation it would have
+prompted would have solved nothing.
 
 ---
 
@@ -560,14 +623,14 @@ share no code.
 
 Stated plainly rather than left to be discovered.
 
-**Main bundle is 603kB (188kB gzip).** Widget archetypes are code-split into
+**Main bundle is 649kB (202kB gzip).** Widget archetypes are code-split into
 their own chunks, but Framer Motion, dnd-kit, Radix and zod all land in the entry
 chunk. Splitting the motion and drag libraries behind the first interaction would
 be the obvious next win.
 
-**Zero CLS is architectural, not measured.** The geometry-first stream design
-makes shift structurally impossible, but no Lighthouse or `PerformanceObserver`
-run is included to evidence it.
+**Performance numbers come from headless Chromium on localhost.** They are
+optimistic against a real device on a real network. The instrumentation is in
+the app (⋯ → Performance overlay) so the same metrics can be read in any browser.
 
 **Sidebar and history navigation are presentational.** Nothing is wired to a
 router. Deliberate: routing would consume time that belongs in the widget runtime,

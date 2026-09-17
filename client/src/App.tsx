@@ -1,13 +1,13 @@
 import { MotionConfig } from 'framer-motion'
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { Dashboard } from '@/features/dashboard/Dashboard'
+
 import { Composer } from '@/features/shell/Composer'
 import { HistoryPanel } from '@/features/shell/HistoryPanel'
 import { Sidebar } from '@/features/shell/Sidebar'
 import { TopBar } from '@/features/shell/TopBar'
 import { useDashboardStream } from '@/hooks/useDashboardStream'
 import { ToastProvider } from '@/hooks/useToast'
-import { useTheme } from '@/hooks/useTheme'
 
 const SIDEBAR_ITEMS = [
   'How many active customer...',
@@ -20,14 +20,22 @@ const SIDEBAR_ITEMS = [
 
 const DEFAULT_PROMPT = 'Which accounts are high-risk and need review?'
 
+/**
+ * Lazy so the diagnostics panel costs nothing until it is opened. A statically
+ * imported dev tool sits in the entry chunk of every session that never uses it.
+ */
+const PerfOverlay = lazy(() =>
+  import('@/features/devtools/PerfOverlay').then((m) => ({ default: m.PerfOverlay })),
+)
+
 function Workspace() {
-  const { theme, setTheme } = useTheme()
   const [injectFaults, setInjectFaults] = useState(false)
   // The only state the responsive shell needs. Both panels are STATIC at their
   // respective breakpoints — these flags matter solely below them, where the
   // panel becomes an overlay drawer.
   const [navOpen, setNavOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [showPerf, setShowPerf] = useState(false)
 
   const stream = useDashboardStream()
   const { generate } = stream
@@ -84,12 +92,12 @@ function Workspace() {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
           breadcrumb={stream.meta?.breadcrumb ?? ['Investigation', 'High Risk Accounts Review']}
-          theme={theme}
-          onThemeChange={setTheme}
           injectFaults={injectFaults}
           onInjectFaultsChange={setInjectFaults}
           onOpenNav={() => setNavOpen(true)}
           onOpenHistory={() => setHistoryOpen(true)}
+          showPerf={showPerf}
+          onShowPerfChange={setShowPerf}
         />
 
         {/* The canvas is its own scroll container so the shell stays fixed and
@@ -116,6 +124,14 @@ function Workspace() {
         open={historyOpen}
         onClose={closePanels}
       />
+
+      {showPerf && (
+        // No fallback: a loading placeholder for a diagnostics panel would be
+        // noise, and the chunk is ~2kB.
+        <Suspense fallback={null}>
+          <PerfOverlay onClose={() => setShowPerf(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }

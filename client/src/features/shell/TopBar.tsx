@@ -1,5 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import {
+  Activity,
   Check,
   ChevronDown,
   Clock,
@@ -13,17 +14,17 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { THEMES, THEME_LABELS, type Theme } from '@/hooks/useTheme'
+import { THEMES, THEME_LABELS, setTheme, useTheme, type Theme } from '@/hooks/useTheme'
 import { cn } from '@/lib/cn'
 
 interface TopBarProps {
   breadcrumb: string[]
-  theme: Theme
-  onThemeChange: (t: Theme) => void
   injectFaults: boolean
   onInjectFaultsChange: (v: boolean) => void
   onOpenNav: () => void
   onOpenHistory: () => void
+  showPerf: boolean
+  onShowPerfChange: (v: boolean) => void
 }
 
 const THEME_ICONS: Record<Theme, typeof Sun> = {
@@ -46,15 +47,13 @@ const iconBtn = 'rounded-lg p-2 text-text-muted transition-colors hover:bg-surfa
 
 export function TopBar({
   breadcrumb,
-  theme,
-  onThemeChange,
   injectFaults,
   onInjectFaultsChange,
   onOpenNav,
   onOpenHistory,
+  showPerf,
+  onShowPerfChange,
 }: TopBarProps) {
-  const ThemeIcon = THEME_ICONS[theme]
-
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
@@ -109,29 +108,7 @@ export function TopBar({
           <Clock className="size-icon" strokeWidth={2} />
         </button>
 
-        {/* Three explicit options rather than a binary toggle, because high
-         *  contrast is a peer of light and dark, not a modifier. */}
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button type="button" aria-label={`Theme: ${THEME_LABELS[theme]}`} className={iconBtn}>
-              <ThemeIcon className="size-icon" strokeWidth={2} />
-            </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content align="end" sideOffset={8} className={menuPanel}>
-              {THEMES.map((t) => {
-                const Icon = THEME_ICONS[t]
-                return (
-                  <DropdownMenu.Item key={t} onSelect={() => onThemeChange(t)} className={menuItem}>
-                    <Icon className="size-icon-sm text-text-muted" strokeWidth={2} />
-                    <span className="flex-1">{THEME_LABELS[t]}</span>
-                    {theme === t && <Check className="size-icon-sm text-accent" strokeWidth={2.5} />}
-                  </DropdownMenu.Item>
-                )
-              })}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+        <ThemeSwitcher />
 
         <button type="button" aria-label="Share" className={cn(iconBtn, 'hidden sm:block')}>
           <Share2 className="size-icon" strokeWidth={2} />
@@ -159,6 +136,21 @@ export function TopBar({
               <p className="px-2.5 pb-1.5 pt-1 text-micro leading-snug text-text-dim">
                 Adds an unknown widget type and a malformed payload to the next generation.
               </p>
+
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+
+              <DropdownMenu.CheckboxItem
+                checked={showPerf}
+                onCheckedChange={onShowPerfChange}
+                className={menuItem}
+              >
+                <Activity className="size-icon-sm text-accent" strokeWidth={2} />
+                <span className="flex-1">Performance overlay</span>
+                {showPerf && <Check className="size-icon-sm text-accent" strokeWidth={2.5} />}
+              </DropdownMenu.CheckboxItem>
+              <p className="px-2.5 pb-1.5 pt-1 text-micro leading-snug text-text-dim">
+                Live CLS, long tasks, input latency and schema-validation cost.
+              </p>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -179,5 +171,45 @@ function Pill({ children, className }: { children: ReactNode; className?: string
     >
       {children}
     </button>
+  )
+}
+
+/**
+ * The only component in the app that subscribes to the theme.
+ *
+ * Isolating the subscription here is the point: a theme change repaints via CSS
+ * custom properties and needs no re-render at all, so the single component that
+ * displays *which* theme is active should be the single component React
+ * bothers to update.
+ *
+ * Three explicit options rather than a binary toggle, because high contrast is
+ * a peer of light and dark, not a modifier.
+ */
+function ThemeSwitcher() {
+  const theme = useTheme()
+  const ThemeIcon = THEME_ICONS[theme]
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button type="button" aria-label={`Theme: ${THEME_LABELS[theme]}`} className={iconBtn}>
+          <ThemeIcon className="size-icon" strokeWidth={2} />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="end" sideOffset={8} className={menuPanel}>
+          {THEMES.map((t) => {
+            const Icon = THEME_ICONS[t]
+            return (
+              <DropdownMenu.Item key={t} onSelect={() => setTheme(t)} className={menuItem}>
+                <Icon className="size-icon-sm text-text-muted" strokeWidth={2} />
+                <span className="flex-1">{THEME_LABELS[t]}</span>
+                {theme === t && <Check className="size-icon-sm text-accent" strokeWidth={2.5} />}
+              </DropdownMenu.Item>
+            )
+          })}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   )
 }

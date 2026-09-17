@@ -84,7 +84,8 @@ function metricCards(): WidgetEnvelope<MetricCardData>[] {
     type: 'METRIC_CARD',
     title,
     // Four across on a 12-col matrix. The client collapses this responsively.
-    layout: { span: 3, minHeight: 124 },
+    // Measured: 164px rendered (label + value + trend slot + sparkline).
+    layout: { span: 3, minHeight: 168 },
     data,
   }))
 }
@@ -157,7 +158,8 @@ function agentParams(): WidgetEnvelope<DynamicFormData> {
     type: 'DYNAMIC_FORM',
     title: 'Agent Parameter Adjuster',
     subtitle: 'Tune how the next investigation is run',
-    layout: { span: 6, minHeight: 300 },
+    // Measured: 479px rendered (four fields, each with a fixed error slot).
+    layout: { span: 6, minHeight: 490 },
     data: {
       fields: [
         { name: 'temperature', label: 'Model Temperature', type: 'slider', min: 0, max: 1, step: 0.05, default: 0.7 },

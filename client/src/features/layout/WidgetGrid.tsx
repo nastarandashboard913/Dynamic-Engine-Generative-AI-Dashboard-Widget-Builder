@@ -10,7 +10,7 @@ import {
 import { restrictToParentElement } from '@dnd-kit/modifiers'
 import { SortableContext, rectSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { WidgetRenderer } from '@/features/registry/WidgetRenderer'
 import { WidgetSkeleton } from '@/features/registry/WidgetSkeleton'
 import type { Placeholder, WidgetEnvelope } from '@/types/schema'
@@ -100,11 +100,19 @@ export function WidgetGrid({ placeholders, widgets, order, onReorder }: WidgetGr
                    *  would animate the same property from two sources and make
                    *  drags jitter. */}
                   <div
-                    // The reserved height lives on this wrapper, so it applies
-                    // to the skeleton AND the real widget. Content swapping in
-                    // cannot change the cell's footprint.
-                    style={{ minHeight: placeholder.layout.minHeight }}
-                    className="h-full"
+                    // Lets the performance overlay report *which* widget moved
+                    // rather than an anonymous div.
+                    data-widget-id={placeholder.id}
+                    data-widget-type={placeholder.type}
+                    // Reservation is passed as a custom property rather than an
+                    // inline min-height so CSS can widen it per breakpoint. The
+                    // server declares one number and cannot know the viewport;
+                    // see `.widget-cell` in index.css.
+                    style={{ '--reserved-h': `${placeholder.layout.minHeight}px` } as CSSProperties}
+                    // Sizing lives entirely in `.widget-cell` — no `h-full`
+                    // utility, which would outrank the component-layer rule that
+                    // gives the table a definite height.
+                    className="widget-cell"
                   >
                     {widget ? (
                       // Fade only — no y-offset, no scale. Movement here would

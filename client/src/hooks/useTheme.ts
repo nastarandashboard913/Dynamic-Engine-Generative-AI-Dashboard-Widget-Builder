@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 export const THEMES = ['dark', 'light', 'hc'] as const
 export type Theme = (typeof THEMES)[number]
@@ -11,34 +11,80 @@ export const THEME_LABELS: Record<Theme, string> = {
 
 const STORAGE_KEY = 'dynamic-engine:theme'
 
+/* ============================================================================
+ * Theme store
+ * ---------------------------------------------------------------------------
+ * Theming here is done entirely with CSS custom properties, which means
+ * switching themes should require EXACTLY ZERO React re-renders: the browser
+ * re-resolves `var(--surface)` and repaints. Nothing in the tree reads a colour
+ * from JavaScript.
+ *
+ * The previous implementation missed that. `useTheme()` held useState in the
+ * root component, so one click re-rendered the entire workspace — the shell,
+ * the grid, the DndContext and nine `useSortable` hooks — and only then, in an
+ * effect, wrote the attribute that actually does the work. The measured cost
+ * was an INP above 3 seconds.
+ *
+ * Now the attribute is written SYNCHRONOUSLY in the event handler, so the
+ * repaint starts immediately rather than waiting on React. State lives in a
+ * module-level store, and the only subscriber is the control that renders the
+ * current theme's icon.
+ * ========================================================================= */
+
 function readInitial(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored && (THEMES as readonly string[]).includes(stored)) return stored as Theme
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored && (THEMES as readonly string[]).includes(stored)) return stored as Theme
+  } catch {
+    /* private mode / storage disabled */
+  }
   return 'dark'
 }
 
+let current: Theme = typeof document === 'undefined' ? 'dark' : readInitial()
+const listeners = new Set<() => void>()
+
 /**
- * Theme state.
+ * Applies the theme to the document immediately, then notifies subscribers.
  *
- * The actual switch is one attribute write on <html>; React state exists only
- * so the UI can show which theme is active. No context, no re-render cascade,
- * and crucially no component anywhere reads a colour value — they all resolve
- * through CSS custom properties, so the entire palette changes without a single
- * component re-rendering.
+ * Order matters: the DOM write happens first so the browser can begin the style
+ * recalculation in the same task as the click, independent of whatever React
+ * does afterwards.
  */
-export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(readInitial)
+export function setTheme(next: Theme): void {
+  if (next === current) return
+  current = next
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
+  document.documentElement.dataset.theme = next
+  try {
+    localStorage.setItem(STORAGE_KEY, next)
+  } catch {
+    /* non-fatal: the theme still applies for this session */
+  }
 
-  const setTheme = useCallback((next: Theme) => setThemeState(next), [])
+  for (const fn of listeners) fn()
+}
 
-  const cycleTheme = useCallback(() => {
-    setThemeState((t) => THEMES[(THEMES.indexOf(t) + 1) % THEMES.length] ?? 'dark')
-  }, [])
+export function cycleTheme(): void {
+  setTheme(THEMES[(THEMES.indexOf(current) + 1) % THEMES.length] ?? 'dark')
+}
 
-  return { theme, setTheme, cycleTheme }
+function subscribe(fn: () => void): () => void {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
+function getSnapshot(): Theme {
+  return current
+}
+
+/**
+ * Subscribes to the active theme.
+ *
+ * Call this ONLY where the current theme is actually rendered — today that is
+ * the theme switcher's icon and checkmarks. Calling it higher in the tree would
+ * reintroduce the cascade this store exists to remove.
+ */
+export function useTheme(): Theme {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }

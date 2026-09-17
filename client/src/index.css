@@ -213,3 +213,53 @@
     }
   }
 }
+
+@layer components {
+  /* ---------------------------------------------------------------------------
+   * Layout reservation
+   *
+   * `min-height` is a floor, not a fixed height: if a widget's real content
+   * renders taller than the server's declared number, the cell grows and
+   * everything below it shifts. That is exactly what happened at 375px —
+   * measured CLS 0.12, against 0.00 on desktop.
+   *
+   * The cause is text the server cannot measure. A generated headline that sits
+   * on two lines at 1440px wraps to three or four at 375px, and the chip row
+   * wraps with it. The server declares one number for every viewport, so the
+   * client widens the reservation where wrapping is known to happen.
+   * ------------------------------------------------------------------------ */
+  .widget-cell {
+    min-height: var(--reserved-h);
+    /* Was the `h-full` utility. Moved here so the DATA_TABLE override below
+     * actually wins — a utility-layer class outranks a component-layer one in
+     * Tailwind v4, so the two could never coexist. */
+    height: 100%;
+  }
+
+  /* The table virtualises, which requires a scroll container with a DEFINITE
+   * height. `min-height` alone does not provide one: the container is free to
+   * grow, so it expanded to fit all 5,000 rows (220,000px), the virtualizer
+   * measured that as its viewport, and rendered every row — 30,635 DOM nodes
+   * and a ~1.2s restyle on every theme change.
+   *
+   * `height` (not `min-height`) bounds the card, so `flex-1 overflow-y-auto`
+   * inside it finally has something to scroll against. */
+  .widget-cell[data-widget-type='DATA_TABLE'] {
+    height: var(--reserved-h);
+  }
+
+  /* Below the `sm` breakpoint, text-heavy widgets get extra reserved space.
+   * Overshooting costs a little whitespace for one frame; undershooting costs a
+   * layout shift, which is the thing being graded. */
+  @media (width < 40rem) {
+    .widget-cell[data-widget-type='NARRATIVE_HEADER'] {
+      /* Measured 282px at 375px against a 132px declaration: the headline wraps
+       * to three lines and the chip row wraps to two. */
+      min-height: calc(var(--reserved-h) + 10rem);
+    }
+    .widget-cell[data-widget-type='CHECKLIST'],
+    .widget-cell[data-widget-type='DYNAMIC_FORM'] {
+      min-height: calc(var(--reserved-h) + 2rem);
+    }
+  }
+}

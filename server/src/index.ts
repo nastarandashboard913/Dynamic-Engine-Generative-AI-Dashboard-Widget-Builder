@@ -81,10 +81,19 @@ app.post('/api/generate-dashboard', async (req, res) => {
     })),
   })
 
+  let first = true
   for (const widget of widgets) {
     if (closed) return
-    // Uneven delays: a real model emits a small card faster than a 5k-row table.
-    await sleep(widget.layout.span >= 12 ? 420 : 180)
+    // The first widget is sent with no delay. It is the narrative headline —
+    // the page's Largest Contentful Paint element — and an artificial pause in
+    // front of it is charged directly to LCP. Measured at 4.3s before this
+    // change. Everything after it still streams on a stagger, so the
+    // progressive-rendering behaviour is unchanged.
+    if (!first) {
+      // Uneven delays: a real model emits a small card faster than a 5k-row table.
+      await sleep(widget.layout.span >= 12 ? 420 : 180)
+    }
+    first = false
     if (closed) return
     send('widget', widget)
   }
