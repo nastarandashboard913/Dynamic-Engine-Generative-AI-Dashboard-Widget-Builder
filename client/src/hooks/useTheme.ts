@@ -85,9 +85,6 @@ export function applyServerTheme(next: Theme): void {
   for (const fn of listeners) fn()
 }
 
-export function cycleTheme(): void {
-  setTheme(THEMES[(THEMES.indexOf(current) + 1) % THEMES.length] ?? 'dark')
-}
 
 function subscribe(fn: () => void): () => void {
   listeners.add(fn)

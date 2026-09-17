@@ -77,4 +77,3 @@ export function isKnownWidget(type: string): boolean {
 }
 
 /** Archetypes this client can render — useful for docs and debugging. */
-export const knownWidgetTypes = Object.keys(widgetRegistry)

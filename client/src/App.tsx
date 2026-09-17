@@ -1,4 +1,3 @@
-import { MotionConfig } from 'framer-motion'
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 
@@ -188,19 +187,12 @@ function Workspace() {
 
 export default function App() {
   return (
-    /**
-     * `reducedMotion="user"` is not optional polish.
-     *
-     * The CSS `prefers-reduced-motion` block in index.css only neutralises CSS
-     * transitions. Framer Motion drives its animations from JavaScript by
-     * writing inline styles frame by frame, so it never sees that rule —
-     * without this, a user who has asked the OS for reduced motion still
-     * receives every spring, fade and layout animation in the app.
-     */
-    <MotionConfig reducedMotion="user">
-      <ToastProvider>
-        <Workspace />
-      </ToastProvider>
-    </MotionConfig>
+    /* Every animation in the app is now CSS, so the `prefers-reduced-motion`
+     * block in index.css covers all of them. Framer Motion needed a
+     * MotionConfig wrapper here because it drives animations from JavaScript
+     * and never sees that media query. */
+    <ToastProvider>
+      <Workspace />
+    </ToastProvider>
   )
 }

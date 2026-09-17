@@ -1,6 +1,5 @@
 import * as Slider from '@radix-ui/react-slider'
 import * as Switch from '@radix-ui/react-switch'
-import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { WidgetCard } from '@/components/WidgetCard'
@@ -237,15 +236,15 @@ function Field({ field, value, error, onChange }: FieldProps) {
       {/* Error slot is always in the DOM at a fixed height. Showing and hiding
        *  it would reflow every field below on each keystroke. */}
       <div className="h-4">
-        <motion.p
+        <p
           id={errorId}
-          initial={false}
-          animate={{ opacity: error ? 1 : 0 }}
-          transition={{ duration: 0.15 }}
-          className="text-micro text-danger"
+          className={cn(
+            'text-micro text-danger transition-opacity duration-150',
+            error ? 'opacity-100' : 'opacity-0',
+          )}
         >
           {error}
-        </motion.p>
+        </p>
       </div>
     </div>
   )

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import {
   ArrowUp,
   Brain,
@@ -32,12 +31,7 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 sm:bottom-5 sm:px-6"
-    >
+    <div className="composer-enter pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 sm:bottom-5 sm:px-6">
       <div
         className={cn(
           'pointer-events-auto w-full max-w-composer rounded-2xl border border-border',
@@ -121,7 +115,7 @@ export function Composer({ onSubmit, busy }: ComposerProps) {
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

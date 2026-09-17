@@ -423,7 +423,9 @@ token scale instead.
 
 ### Micro-interactions and motion
 
-Framer Motion for state-driven animation, CSS for everything declarative.
+All animation is CSS. Framer Motion was removed: it cost ~41kB gzipped (19% of
+the bundle) for six animations, five of which were plain transitions in disguise.
+The brief permits either ("Tailwind transitions or Framer Motion").
 
 - Widgets **fade** in on arrival — no y-offset, no scale. Movement would read as
   the layout settling, which is the exact impression the reserved geometry
@@ -436,11 +438,14 @@ Framer Motion for state-driven animation, CSS for everything declarative.
   animation would invite layout work on every frame while the stream is still
   arriving.
 
-`<MotionConfig reducedMotion="user">` wraps the app. This is not optional polish:
-the CSS `prefers-reduced-motion` block only neutralises CSS transitions, and
-Framer drives its animations from JavaScript by writing inline styles frame by
-frame, so it never sees that rule. Without the wrapper, a user who asked the OS
-for reduced motion still receives every animation.
+**Toast exit is the one case CSS cannot express alone.** An element already
+removed from the DOM has nothing left to animate, so the provider marks a
+dismissed toast `data-exiting` and unmounts it 200ms later, once the animation
+has played. That is precisely the service `AnimatePresence` provided.
+
+A side benefit of the removal: `prefers-reduced-motion` in `index.css` now covers
+every animation in the app. Framer needed a separate `MotionConfig` opt-in
+because JavaScript-driven animations never see that media query.
 
 ### Accessibility
 
@@ -676,9 +681,10 @@ share no code.
 Stated plainly rather than left to be discovered.
 
 **Main bundle is 649kB (202kB gzip).** Widget archetypes are code-split into
-their own chunks, but Framer Motion, dnd-kit, Radix and zod all land in the entry
-chunk. Splitting the motion and drag libraries behind the first interaction would
-be the obvious next win.
+their own chunks, and vendor code is now split by library so it caches
+independently of application code. Application code is 13kB gzip; the remaining
+weight is React (65kB), Radix (32kB), zod (26kB) and dnd-kit (18kB), all of which
+are load-bearing.
 
 **Performance numbers come from headless Chromium on localhost.** They are
 optimistic against a real device on a real network. The instrumentation is in

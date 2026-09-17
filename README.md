@@ -123,6 +123,7 @@ it reduces effective contrast behind text.
 | No charting library | Sparkline and histogram are hand-rolled SVG/flex. Recharts would add ~100kB to draw two shapes and fights CSS-variable theming. |
 | Drag bound to a handle, not the card | Widgets own scroll areas, sliders and inputs; a whole-card drag source steals the pointer from all of them. |
 | Fixed table row height | Variable heights need per-row measurement, and measuring during a stream is what causes layout shift. |
+| CSS animations, not Framer Motion | The brief allows either. Framer cost 41kB gzip — 19% of the bundle — for six animations CSS already expresses. Only the toast exit needed JavaScript. |
 | Node/Express, not FastAPI | The brief names both. Node keeps one language for a React role; the wire contract is identical. |
 | Secondary text brighter than the mock | The reference's dim grey measures 3.67:1 — below WCAG AA. Accessibility won. |
 
@@ -136,8 +137,9 @@ Named here rather than left to be found.
   consume time that belongs in the widget runtime, which is what this grades.
 - **No maintained test suite.** The four scripts above are diagnostics, not
   coverage.
-- **649kB entry chunk.** Widgets are code-split; Framer Motion, dnd-kit, Radix and
-  zod are not.
+- **~565kB of vendor code** (177kB gzip), split into cacheable chunks. React is
+  65kB gzip of that; Radix, zod and dnd-kit account for most of the rest and are
+  all load-bearing. Application code is 13kB gzip.
 - **Performance numbers are headless-on-localhost** — optimistic against a real
   device. The same metrics are readable in any browser via ⋯ → Performance
   overlay.

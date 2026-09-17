@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { useMemo } from 'react'
 import { WidgetCard } from '@/components/WidgetCard'
@@ -64,13 +63,14 @@ export function Checklist({ id, title, data }: WidgetProps<ChecklistData>) {
                       : 'border-border-strong text-transparent group-hover:border-text-dim',
                   )}
                 >
-                  <motion.span
-                    initial={false}
-                    animate={{ scale: checked ? 1 : 0.5, opacity: checked ? 1 : 0 }}
-                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                  <span
+                    className={cn(
+                      'transition-all duration-200 ease-out-soft',
+                      checked ? 'scale-100 opacity-100' : 'scale-50 opacity-0',
+                    )}
                   >
                     <Check className="size-3" strokeWidth={3.5} />
-                  </motion.span>
+                  </span>
                 </span>
 
                 <span

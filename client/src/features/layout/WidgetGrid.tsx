@@ -9,7 +9,6 @@ import {
 } from '@dnd-kit/core'
 import { restrictToParentElement } from '@dnd-kit/modifiers'
 import { SortableContext, rectSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, type CSSProperties } from 'react'
 import { WidgetRenderer } from '@/features/registry/WidgetRenderer'
 import { WidgetSkeleton } from '@/features/registry/WidgetSkeleton'
@@ -118,8 +117,7 @@ export function WidgetGrid({ layout, placeholders, widgets, order, onReorder }: 
     >
       <SortableContext items={ordered.map((p) => p.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-12 gap-3 sm:gap-4">
-          <AnimatePresence initial={false}>
-            {ordered.map((placeholder) => {
+          {ordered.map((placeholder) => {
               const widget = widgets.get(placeholder.id)
 
               return (
@@ -153,14 +151,9 @@ export function WidgetGrid({ layout, placeholders, widgets, order, onReorder }: 
                       // Fade only — no y-offset, no scale. Movement here would
                       // read as the layout settling, which is the exact
                       // impression the reserved geometry exists to avoid.
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.28, ease: 'easeOut' }}
-                        className="h-full"
-                      >
+                      <div className="widget-enter h-full">
                         <WidgetRenderer envelope={widget} />
-                      </motion.div>
+                      </div>
                     ) : (
                       <WidgetSkeleton
                         type={placeholder.type}
@@ -171,8 +164,7 @@ export function WidgetGrid({ layout, placeholders, widgets, order, onReorder }: 
                   </div>
                 </SortableWidget>
               )
-            })}
-          </AnimatePresence>
+          })}
         </div>
       </SortableContext>
     </DndContext>
