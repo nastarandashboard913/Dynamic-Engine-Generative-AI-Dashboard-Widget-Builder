@@ -1,4 +1,5 @@
 import { Suspense, memo, useMemo } from 'react'
+import { measureSync } from '@/lib/perf'
 import type { WidgetEnvelope } from '@/types/schema'
 import { FallbackWidget } from './FallbackWidget'
 import { WidgetEnvelopeProvider } from './WidgetContext'
@@ -35,8 +36,14 @@ function WidgetRendererImpl({ envelope }: WidgetRendererProps) {
   // feel slow.
   const parsed = useMemo(() => {
     if (!entry) return null
-    return entry.schema.safeParse(data)
-  }, [entry, data])
+    // Timed because this is the one genuinely expensive synchronous step in the
+    // render path — the table's payload is ~5,000 rows — and no browser metric
+    // attributes it to us specifically.
+    const rowCount = Array.isArray((data as { rows?: unknown[] })?.rows)
+      ? (data as { rows: unknown[] }).rows.length
+      : undefined
+    return measureSync(`validate ${type}`, rowCount, () => entry.schema.safeParse(data))
+  }, [entry, data, type])
 
   if (!entry) {
     return (
