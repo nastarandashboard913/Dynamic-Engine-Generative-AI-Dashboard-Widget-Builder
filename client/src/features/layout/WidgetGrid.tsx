@@ -74,12 +74,44 @@ export function WidgetGrid({ placeholders, widgets, order, onReorder }: WidgetGr
     onReorder(next)
   }
 
+  // Naming widgets in announcements is what makes keyboard dragging usable:
+  // "Metric card moved to position 3 of 9" is navigable, "item moved" is not.
+  const nameOf = (id: string | number) =>
+    ordered.find((p) => p.id === String(id))?.title ??
+    ordered.find((p) => p.id === String(id))?.type.replace(/_/g, ' ').toLowerCase() ??
+    'widget'
+  const positionOf = (id: string | number) => ordered.findIndex((p) => p.id === String(id)) + 1
+
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={[restrictToParentElement]}
       onDragEnd={handleDragEnd}
+      accessibility={{
+        // KeyboardSensor makes dragging *possible* without a mouse; these make
+        // it *discoverable*. Without them a screen-reader user focuses a drag
+        // handle and is told nothing about how to use it.
+        screenReaderInstructions: {
+          draggable:
+            'Press space or enter to pick up this widget. Use the arrow keys to move it. ' +
+            'Press space or enter again to drop it, or escape to cancel.',
+        },
+        announcements: {
+          onDragStart: ({ active }) =>
+            `Picked up ${nameOf(active.id)}. Position ${positionOf(active.id)} of ${ordered.length}.`,
+          onDragOver: ({ active, over }) =>
+            over
+              ? `${nameOf(active.id)} is over position ${positionOf(over.id)} of ${ordered.length}.`
+              : `${nameOf(active.id)} is no longer over a drop target.`,
+          onDragEnd: ({ active, over }) =>
+            over
+              ? `Dropped ${nameOf(active.id)} at position ${positionOf(over.id)} of ${ordered.length}.`
+              : `Dropped ${nameOf(active.id)}. It was returned to its original position.`,
+          onDragCancel: ({ active }) =>
+            `Cancelled. ${nameOf(active.id)} was returned to its original position.`,
+        },
+      }}
     >
       <SortableContext items={ordered.map((p) => p.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-12 gap-3 sm:gap-4">

@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "perf": "node scripts/measure-perf.mjs",
     "perf:layout": "node scripts/diagnose.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "a11y": "node scripts/a11y.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

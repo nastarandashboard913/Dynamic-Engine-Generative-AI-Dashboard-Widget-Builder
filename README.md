@@ -74,6 +74,7 @@ Run from the repository root.
 | `npm run docker:up` / `npm run docker:down` | Compose up / tear down |
 | `npm run perf` | LCP, CLS, long tasks and theme-switch cost, at two viewports |
 | `npm run smoke` | 19 functional checks against the running stack |
+| `npm run a11y` | 10 keyboard and screen-reader checks |
 
 The last two drive headless Chromium via Playwright and expect the stack to be
 running. Playwright has no postinstall step, so `npm run setup` does not
@@ -427,6 +428,32 @@ Framer drives its animations from JavaScript by writing inline styles frame by
 frame, so it never sees that rule. Without the wrapper, a user who asked the OS
 for reduced motion still receives every animation.
 
+### Accessibility
+
+Verified with `npm run a11y` (10 checks) plus incidental coverage in the smoke
+suite. What is in place:
+
+| Concern | How it is handled |
+|---|---|
+| Sidebar has ~15 links before the content | Skip link is the first focusable element |
+| Closing a drawer stranded focus on `<body>` | The opening control is remembered and refocused |
+| Streamed widgets appeared silently | `aria-live` region announces completion |
+| Keyboard dragging was undiscoverable | dnd-kit `screenReaderInstructions` + named announcements |
+| Off-screen drawers were still tabbable | Closed drawers use `visibility: hidden` |
+| Card regions were unnamed | Compound `WidgetCard` wires `aria-labelledby` to the rendered label |
+| Modal focus trap and restoration | Radix Dialog |
+
+Two judgment calls worth naming:
+
+- **The live region announces on completion, not per widget.** Nine
+  announcements during one stream is chatter, not information.
+- **Drag announcements name the widget** — "Picked up High Risk. Position 2 of
+  9." "Item moved to position 2" would be technically compliant and practically
+  useless.
+
+The trade-off: nine drag handles sit in the tab order, so tabbing through the
+dashboard passes each one. A handle reachable by keyboard has to be focusable.
+
 ### Performance
 
 | Technique | Where | Why |
@@ -640,8 +667,11 @@ which is what this exercise grades.
 visible at runtime (fault injection, the inspector, typed fallbacks) rather than
 into coverage.
 
-**Contrast ratios are reasoned about, not formally audited** with a measurement
-tool.
+**Contrast ratios are reasoned about, not formally audited.** `--text-dim`
+(`#7a6f66` on `#1a1614`) is approximately 3.3:1, below the 4.5:1 WCAG AA minimum
+for body text, and it is used on timestamps, table labels and captions. The
+high-contrast theme has not been measured at all. This is the one accessibility
+item still outstanding.
 
 ---
 

@@ -1,5 +1,5 @@
 import { MotionConfig } from 'framer-motion'
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Dashboard } from '@/features/dashboard/Dashboard'
 
 import { Composer } from '@/features/shell/Composer'
@@ -37,12 +37,26 @@ function Workspace() {
   const [historyOpen, setHistoryOpen] = useState(false)
   const [showPerf, setShowPerf] = useState(false)
 
+  // The control that opened the current drawer. Without this, closing a drawer
+  // drops focus to <body> and the next Tab restarts from the top of the page —
+  // the keyboard equivalent of being teleported somewhere you did not ask to go.
+  const drawerTrigger = useRef<HTMLElement | null>(null)
+
   const stream = useDashboardStream()
   const { generate } = stream
+
+  const openDrawer = useCallback((which: 'nav' | 'history') => {
+    drawerTrigger.current = document.activeElement as HTMLElement | null
+    if (which === 'nav') setNavOpen(true)
+    else setHistoryOpen(true)
+  }, [])
 
   const closePanels = useCallback(() => {
     setNavOpen(false)
     setHistoryOpen(false)
+    // Hand focus back to the trigger so the keyboard position is preserved.
+    drawerTrigger.current?.focus()
+    drawerTrigger.current = null
   }, [])
 
   const run = useCallback(
@@ -71,6 +85,16 @@ function Workspace() {
 
   return (
     <div className="flex h-dvh overflow-hidden">
+      {/* First focusable element on the page. The sidebar holds ~15 links, and
+       *  without this a keyboard user tabs through every one of them before
+       *  reaching the dashboard — on every single load. Hidden until focused. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-chip focus:border focus:border-border focus:bg-bg-elevated focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-text focus:shadow-float"
+      >
+        Skip to main content
+      </a>
+
       <Sidebar
         investigations={SIDEBAR_ITEMS}
         activeInvestigation="High Risk Accounts Review"
@@ -94,8 +118,8 @@ function Workspace() {
           breadcrumb={stream.meta?.breadcrumb ?? ['Investigation', 'High Risk Accounts Review']}
           injectFaults={injectFaults}
           onInjectFaultsChange={setInjectFaults}
-          onOpenNav={() => setNavOpen(true)}
-          onOpenHistory={() => setHistoryOpen(true)}
+          onOpenNav={() => openDrawer('nav')}
+          onOpenHistory={() => openDrawer('history')}
           showPerf={showPerf}
           onShowPerfChange={setShowPerf}
         />
@@ -103,7 +127,26 @@ function Workspace() {
         {/* The canvas is its own scroll container so the shell stays fixed and
          *  the page body never scrolls — which is also what keeps
          *  `overflow-x: clip` on body from creating a horizontal scroll leak. */}
-        <main className="relative min-h-0 flex-1 px-3 pb-3 sm:px-6 sm:pb-6">
+        <main
+          id="main"
+          // -1 makes it programmatically focusable (for the skip link) without
+          // adding it to the natural tab order.
+          tabIndex={-1}
+          className="relative min-h-0 flex-1 px-3 pb-3 focus:outline-none sm:px-6 sm:pb-6"
+        >
+          {/* The dashboard assembles itself over ~2s. A sighted user watches it
+           *  happen; without this a screen-reader user gets silence. Announced
+           *  on completion only — one message per generation, not one per
+           *  widget, which would be unusable chatter. */}
+          <p aria-live="polite" className="sr-only">
+            {stream.status === 'streaming'
+              ? 'Generating dashboard'
+              : stream.status === 'complete'
+                ? `Dashboard ready with ${stream.placeholders.length} widgets`
+                : stream.status === 'error'
+                  ? 'Dashboard generation failed'
+                  : ''}
+          </p>
           <div className="relative h-full overflow-y-auto overflow-x-hidden rounded-2xl border border-border bg-bg/40 px-3 py-4 sm:px-6 sm:py-6">
             {/* Caps line length on very wide displays; below the cap this is a
              *  no-op, so it costs nothing at normal sizes. */}
