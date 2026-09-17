@@ -34,6 +34,7 @@ npm run perf      # LCP, CLS, long tasks, theme-switch cost
 npm run smoke     # 19 functional checks
 npm run a11y      # 10 keyboard / screen-reader checks
 npm run contrast  # 64 text styles × 3 themes
+npm run verify    # end-to-end: console errors, themes, layout field, viewports
 ```
 
 | | Desktop | Mobile (375px) | Budget |

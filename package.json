@@ -15,7 +15,8 @@
     "perf": "npm --prefix client run perf",
     "smoke": "npm --prefix client run smoke",
     "a11y": "npm --prefix client run a11y",
-    "contrast": "npm --prefix client run contrast"
+    "contrast": "npm --prefix client run contrast",
+    "verify": "npm --prefix client run verify"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
