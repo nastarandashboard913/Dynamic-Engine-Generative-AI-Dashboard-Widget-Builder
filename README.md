@@ -75,6 +75,7 @@ Run from the repository root.
 | `npm run perf` | LCP, CLS, long tasks and theme-switch cost, at two viewports |
 | `npm run smoke` | 19 functional checks against the running stack |
 | `npm run a11y` | 10 keyboard and screen-reader checks |
+| `npm run contrast` | WCAG AA contrast across all three themes |
 
 The last two drive headless Chromium via Playwright and expect the stack to be
 running. Playwright has no postinstall step, so `npm run setup` does not
@@ -442,6 +443,17 @@ suite. What is in place:
 | Off-screen drawers were still tabbable | Closed drawers use `visibility: hidden` |
 | Card regions were unnamed | Compound `WidgetCard` wires `aria-labelledby` to the rendered label |
 | Modal focus trap and restoration | Radix Dialog |
+| Secondary text failed AA contrast | `--text-dim` raised in dark and light |
+
+Contrast is measured, not assumed — `npm run contrast` walks every rendered text
+style in all three themes, resolves its effective background, and checks the
+ratio. 64 styles, all passing, tightest margin 5.02:1 against a 4.5:1 minimum.
+
+Two things that script had to learn the hard way: elements on a CSS gradient are
+skipped rather than guessed at (the logo reported 1.01:1 purely because a
+gradient is invisible to a background-colour walk), and sampling waits for colour
+transitions to settle — at 400ms it was reading values midway between two
+palettes and reporting greys that belong to neither theme as failures.
 
 Two judgment calls worth naming:
 
@@ -667,11 +679,10 @@ which is what this exercise grades.
 visible at runtime (fault injection, the inspector, typed fallbacks) rather than
 into coverage.
 
-**Contrast ratios are reasoned about, not formally audited.** `--text-dim`
-(`#7a6f66` on `#1a1614`) is approximately 3.3:1, below the 4.5:1 WCAG AA minimum
-for body text, and it is used on timestamps, table labels and captions. The
-high-contrast theme has not been measured at all. This is the one accessibility
-item still outstanding.
+**Secondary text is more prominent than the reference design.** `--text-dim` was
+lightened in dark and darkened in light to clear WCAG AA; the reference's dim
+grey measured 3.67:1, below the 4.5:1 minimum for body text. A deliberate
+departure from the mock, in favour of the rubric's accessibility requirement.
 
 ---
 

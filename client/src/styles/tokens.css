@@ -29,7 +29,11 @@
   /* Text */
   --text: #f5f0ea;
   --text-muted: #9a8f85;
-  --text-dim: #7a6f66;
+  /* Lightened from #7a6f66, which measured 3.67:1 against --surface — below the
+   * 4.5:1 WCAG AA minimum for body text. It is used on table footers, metric
+   * labels, timestamps and the breadcrumb separator, so the failure was spread
+   * across roughly twenty elements rather than isolated to one. */
+  --text-dim: #948a80;
 
   /* Accent — the amber the reference UI is built around */
   --accent: #e8833a;
@@ -76,7 +80,9 @@
 
   --text: #1c1714;
   --text-muted: #6b6259;
-  --text-dim: #8a8078;
+  /* Darkened from #8a8078 (3.86:1). Same reasoning as the dark theme: this is
+   * body text, so 4.5:1 applies, not the 3:1 large-text allowance. */
+  --text-dim: #6f665e;
 
   /* Darkened vs. dark theme: the reference amber fails AA on white */
   --accent: #b45309;

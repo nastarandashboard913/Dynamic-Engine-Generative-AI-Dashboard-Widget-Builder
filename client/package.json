@@ -12,7 +12,8 @@
     "perf": "node scripts/measure-perf.mjs",
     "perf:layout": "node scripts/diagnose.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "a11y": "node scripts/a11y.mjs"
+    "a11y": "node scripts/a11y.mjs",
+    "contrast": "node scripts/contrast.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
