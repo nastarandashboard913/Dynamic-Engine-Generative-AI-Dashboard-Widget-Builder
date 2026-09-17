@@ -7,6 +7,7 @@ import { HistoryPanel } from '@/features/shell/HistoryPanel'
 import { Sidebar } from '@/features/shell/Sidebar'
 import { TopBar } from '@/features/shell/TopBar'
 import { useDashboardStream } from '@/hooks/useDashboardStream'
+import { applyServerTheme } from '@/hooks/useTheme'
 import { ToastProvider } from '@/hooks/useToast'
 
 const SIDEBAR_ITEMS = [
@@ -72,6 +73,12 @@ function Workspace() {
   useEffect(() => {
     void generate(DEFAULT_PROMPT, false)
   }, [generate])
+
+  // The payload declares a theme. Honour it unless the user has chosen one.
+  const streamTheme = stream.meta?.theme
+  useEffect(() => {
+    if (streamTheme) applyServerTheme(streamTheme)
+  }, [streamTheme])
 
   // Escape closes whichever drawer is open — expected of any overlay.
   useEffect(() => {

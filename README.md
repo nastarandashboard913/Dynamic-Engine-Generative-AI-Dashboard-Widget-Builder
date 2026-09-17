@@ -152,6 +152,18 @@ handle.
 much room a widget needs; the client does not guess. This is what makes zero-CLS
 streaming possible.
 
+The payload's two top-level fields are honoured rather than decorative:
+
+- **`layout`** (`grid-2-col` / `grid-3-col` / `grid-4-col`) sets how many columns
+  the matrix has. The grid stays 12 columns internally — it divides cleanly by 2,
+  3 and 4 — and each widget's requested span snaps to the nearest boundary that
+  layout allows. A widget asking for 3/12 stays a quarter in `grid-4-col` and
+  widens to a third in `grid-3-col`. The model expresses intent; the layout
+  decides the grid it lands on.
+- **`theme`** is applied on first generation, but only if the user has never
+  chosen one, and it is not persisted — so the model's preference stays a
+  default rather than quietly overwriting a real choice.
+
 ### Dynamic Component Registry
 
 `client/src/features/registry/` — the single place where a wire-format string

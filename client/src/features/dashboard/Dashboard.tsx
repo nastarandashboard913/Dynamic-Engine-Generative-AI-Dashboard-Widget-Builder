@@ -12,7 +12,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ stream }: DashboardProps) {
-  const { status, placeholders, widgets, error } = stream
+  const { status, placeholders, widgets, error, meta } = stream
   const [order, setOrder] = useState<string[]>([])
   const toast = useToast()
   // Holds the last server-confirmed order so a rejected drag can be undone.
@@ -86,6 +86,7 @@ export function Dashboard({ stream }: DashboardProps) {
 
   return (
     <WidgetGrid
+      layout={meta?.layout ?? 'grid-3-col'}
       placeholders={placeholders}
       widgets={widgets}
       order={order}

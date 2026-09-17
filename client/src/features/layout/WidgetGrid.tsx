@@ -15,8 +15,11 @@ import { WidgetRenderer } from '@/features/registry/WidgetRenderer'
 import { WidgetSkeleton } from '@/features/registry/WidgetSkeleton'
 import type { Placeholder, WidgetEnvelope } from '@/types/schema'
 import { SortableWidget } from './SortableWidget'
+import { snapSpan, type LayoutKind } from './spans'
 
 interface WidgetGridProps {
+  /** From the payload's `layout` field; decides how many columns widgets snap to. */
+  layout: LayoutKind
   placeholders: Placeholder[]
   widgets: Map<string, WidgetEnvelope>
   order: string[]
@@ -32,7 +35,7 @@ interface WidgetGridProps {
  * inside a box that was already the right shape. Cumulative Layout Shift is
  * zero by construction rather than by tuning.
  */
-export function WidgetGrid({ placeholders, widgets, order, onReorder }: WidgetGridProps) {
+export function WidgetGrid({ layout, placeholders, widgets, order, onReorder }: WidgetGridProps) {
   const sensors = useSensors(
     // A small activation distance keeps clicks inside widgets from being
     // interpreted as drags.
@@ -123,7 +126,7 @@ export function WidgetGrid({ placeholders, widgets, order, onReorder }: WidgetGr
                 <SortableWidget
                   key={placeholder.id}
                   id={placeholder.id}
-                  span={placeholder.layout.span}
+                  span={snapSpan(placeholder.layout.span, layout)}
                   disabled={!widget}
                 >
                   {/* Deliberately NOT a `layout` animation. dnd-kit already

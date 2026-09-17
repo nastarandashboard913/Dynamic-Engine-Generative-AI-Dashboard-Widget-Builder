@@ -26,3 +26,30 @@ export function spanToClass(span: number): string {
       return 'col-span-6 sm:col-span-4 lg:col-span-2'
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Column count from the payload's `layout` field.
+ *
+ * The schema declares `grid-2-col` / `grid-3-col` / `grid-4-col`, and that has
+ * to mean something or the field is decoration. The matrix stays 12 columns
+ * internally — it divides cleanly by 2, 3 and 4 — and a widget's requested span
+ * is snapped to the nearest boundary the declared layout allows.
+ *
+ * So in `grid-3-col` a widget asking for 3/12 is widened to 4/12 (one third),
+ * and in `grid-4-col` it stays at 3/12 (one quarter). The model expresses
+ * intent; the layout decides the grid it lands on.
+ * ------------------------------------------------------------------------ */
+
+export type LayoutKind = 'grid-2-col' | 'grid-3-col' | 'grid-4-col'
+
+const COLUMNS: Record<LayoutKind, number> = {
+  'grid-2-col': 2,
+  'grid-3-col': 3,
+  'grid-4-col': 4,
+}
+
+export function snapSpan(span: number, layout: LayoutKind): number {
+  const unit = 12 / COLUMNS[layout]
+  // Never smaller than one column, never wider than the full row.
+  return Math.min(12, Math.max(unit, Math.round(span / unit) * unit))
+}

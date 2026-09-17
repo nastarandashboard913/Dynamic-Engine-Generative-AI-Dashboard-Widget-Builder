@@ -67,6 +67,9 @@ function metricCards(): WidgetEnvelope<MetricCardData>[] {
     }],
     ['Avg Risk Score', {
       value: stats.avgScore.toFixed(2),
+      // The schema's sample payload carries `unit` (e.g. "req/sec"); emitting it
+      // here keeps the client's rendering path exercised rather than dead code.
+      unit: '/ 1.00',
       caption: 'High-risk cohort',
       status: 'warning',
       sparkline: sparkline(7),
@@ -234,7 +237,10 @@ export function planDashboard({ prompt, injectFaults }: GenerateOptions): {
     meta: {
       investigationId: `inv_${Date.now().toString(36)}`,
       prompt,
-      layout: 'grid-3-col',
+      // Four columns: the KPI row is four cards wide in the reference design, and
+      // `layout` now decides what a widget's span snaps to, so this has to state
+      // the grid the plan was built for.
+      layout: p.includes('distribut') || p.includes('spread') ? 'grid-2-col' : 'grid-4-col',
       theme: 'dark',
       breadcrumb: ['Investigation', 'High Risk Accounts Review'],
       widgetCount: widgets.length,

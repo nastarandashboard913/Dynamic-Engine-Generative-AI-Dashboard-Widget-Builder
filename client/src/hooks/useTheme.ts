@@ -65,6 +65,26 @@ export function setTheme(next: Theme): void {
   for (const fn of listeners) fn()
 }
 
+/**
+ * Applies a theme declared by the payload.
+ *
+ * Deliberately deferential: if the user has ever picked a theme themselves,
+ * that choice wins and this is a no-op. It also does NOT persist, so the
+ * server's preference stays a default rather than quietly becoming the user's
+ * saved setting.
+ */
+export function applyServerTheme(next: Theme): void {
+  try {
+    if (localStorage.getItem(STORAGE_KEY)) return
+  } catch {
+    return
+  }
+  if (next === current) return
+  current = next
+  document.documentElement.dataset.theme = next
+  for (const fn of listeners) fn()
+}
+
 export function cycleTheme(): void {
   setTheme(THEMES[(THEMES.indexOf(current) + 1) % THEMES.length] ?? 'dark')
 }
