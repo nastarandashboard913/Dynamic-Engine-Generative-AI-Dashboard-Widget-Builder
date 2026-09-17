@@ -12,14 +12,6 @@
  * handle gracefully.
  * ========================================================================= */
 
-export type WidgetType =
-  | 'NARRATIVE_HEADER'
-  | 'METRIC_CARD'
-  | 'DATA_TABLE'
-  | 'CHECKLIST'
-  | 'DISTRIBUTION_CHART'
-  | 'DYNAMIC_FORM'
-
 export type LayoutKind = 'grid-2-col' | 'grid-3-col' | 'grid-4-col'
 export type ThemeKind = 'dark' | 'light' | 'hc'
 export type Status = 'success' | 'warning' | 'danger' | 'neutral'
